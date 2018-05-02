@@ -1,0 +1,9 @@
+# ignore in files
+*.o
+*.pyc
+*.root
+*.d
+*.so
+._*
+*__.*
+.#*
