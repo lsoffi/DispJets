@@ -122,11 +122,7 @@ class DisplacedJetsAnalyzer : public edm::EDAnalyzer {
 // constants, enums and typedefs
 // static data member definitions
 
-//template <class someType>
-////inline bool pTsort(someType obj1, someType obj2){
-//inline bool pTsort(const edm::Ptr<reco::Candidate> & obj1, const edm::Ptr<reco::Candidate> & obj2){
-//  return obj1->pt() > obj2->pt();
-//}
+const auto pTsort = [](const auto& obj1, const auto& obj2){ return obj1->pt() > obj2->pt(); };
 
 //---------------------------------------------------------------------------------------------------
 // ------------ constructor  ------------
@@ -277,9 +273,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
       int n = 0;
 
-      //std::vector< const reco::Candidate * > mother;
-      //mother.push_back(genpar_iter.mother());
-      //std::sort(mother.begin(),mother.end(),pTsort);
+      std::vector< const reco::Candidate * > mother;
+      mother.push_back(genpar_iter.mother());
+      std::sort(mother.begin(),mother.end(),pTsort);
 
       for (const auto & mom : *genpar_iter.mother()){
         nmothers++; // number of mothers
