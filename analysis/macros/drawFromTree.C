@@ -1,15 +1,15 @@
 #include <iostream>
 
-typedef std::map<TString, TH1F*>	TH1map;
-typedef TH1map::iterator		TH1mapIter;
-
+typedef std::map<TString, TH1F*> TH1map;
+typedef std::map<TString, TH2F*> TH2map;
 
 // declare other functions
-void run( TString, TString, TString, TFile* );
-void histos( TH1map & );
-void saveplots( TString, TFile* , TH1map & );
-TH1F * MakeTH1FPlot(const TString, const TString, const int, const double, const double, const TString, const TString);
-
+void run( TString, TString, TFile* );
+void histos( TH1map & , TH2map & );
+void save1Dplots( TString, TFile* , const TH1map & );
+void save2Dplots( TString, TFile* , const TH2map & );
+TH1F * MakeTH1FPlot( const TString, const TString, const int, const double, const double, const TString, const TString );
+TH2F * MakeTH2FPlot( const TString, const TString, const int, const double, const double, const int, const double, const double, const TString, const TString );
 
 // START
 void drawFromTree(){
@@ -17,30 +17,64 @@ void drawFromTree(){
   TString path = "../";
   TString out  = "~/www/Plots/DispJets/GenLevelPlots/";
   std::vector< TString > file;
-  file.push_back("ntuple_dispjets.root");
+  file.push_back(Form("%sntuple_dispjets.root",path.Data()));
   int nsamples = file.size();
 
   TFile *fout = TFile::Open(Form("%splots_dispjets.root",out.Data()),"RECREATE");
  
   for (int f = 0; f < nsamples; f++){
-    run(path,file[f],out,fout);
+    run(file[f],out,fout);
   } 
 
 }
 
-void histos( TH1map & map ){
+void histos( TH1map & map , TH2map & map2){
 
-  map["ngj"]			= MakeTH1FPlot("ngj","",20,0,20,"Num. gen jets","");
-  map["ngp"]			= MakeTH1FPlot("ngp","",20,0,20,"Num. gen particles","");
-  map["gj_vx"]			= MakeTH1FPlot("gj_vx","",100,-50,50,"Gen jet vertex X","");
-  map["gj_vy"]			= MakeTH1FPlot("gj_vy","",100,-50,50,"Gen jet vertex Y","");
-  map["gj_vz"]			= MakeTH1FPlot("gj_vz","",100,-50,50,"Gen jet vertex Z","");
-  map["gp_vx"]			= MakeTH1FPlot("gp_vx","",100,-50,50,"Gen particle vertex X","");
-  map["gp_vy"]			= MakeTH1FPlot("gp_vy","",100,-50,50,"Gen particle vertex Y","");
-  map["gp_vz"]			= MakeTH1FPlot("gp_vz","",100,-50,50,"Gen particle vertex Z","");
-  map["gm_vx"]			= MakeTH1FPlot("gm_vx","",100,-50,50,"Gen mom vertex X","");
-  map["gm_vy"]			= MakeTH1FPlot("gm_vy","",100,-50,50,"Gen mom vertex Y","");
-  map["gm_vz"]			= MakeTH1FPlot("gm_vz","",100,-50,50,"Gen mom vertex Z","");
+  // 1D histos
+
+  map["ngj"]		= MakeTH1FPlot("ngj","",20,0,20,"Num. gen jets","");
+  map["ngp"]		= MakeTH1FPlot("ngp","",20,0,20,"Num. gen particles","");
+  // gen jet properties
+  map["gj_pt"]		= MakeTH1FPlot("gj_pt","",20,0,100,"Gen jet p_T","");
+  map["gj_e"]		= MakeTH1FPlot("gj_e","",20,0,100,"Gen jet E",""); 
+  map["gj_eta"]		= MakeTH1FPlot("gj_eta","",20,-4,4,"Gen jet #eta","");
+  map["gj_phi"]		= MakeTH1FPlot("gj_phi","",20,-4,4,"Gen jet #phi","");
+  map["gj_nd"]		= MakeTH1FPlot("gj_nd","",10,0,10,"Gen jet num. daughters","");
+  map["gj_nc"]		= MakeTH1FPlot("gj_nc","",10,0,10,"Gen jet num. constituents","");
+  map["gj_vx"]		= MakeTH1FPlot("gj_vx","",100,-50,50,"Gen jet vertex X","");
+  map["gj_vy"]		= MakeTH1FPlot("gj_vy","",100,-50,50,"Gen jet vertex Y","");
+  map["gj_vz"]		= MakeTH1FPlot("gj_vz","",100,-50,50,"Gen jet vertex Z","");
+  // gen particle properties
+  map["gp_id"]		= MakeTH1FPlot("gp_id","",200,-100,100,"Gen particle ID","");
+  map["gp_pt"]		= MakeTH1FPlot("gp_pt","",20,0,100,"Gen particle p_T","");
+  map["gp_e"]		= MakeTH1FPlot("gp_e","",20,0,100,"Gen particle E",""); 
+  map["gp_eta"]		= MakeTH1FPlot("gp_eta","",20,-4,4,"Gen particle #eta","");
+  map["gp_phi"]		= MakeTH1FPlot("gp_phi","",20,-4,4,"Gen particle #phi","");
+  map["gp_vx"]		= MakeTH1FPlot("gp_vx","",100,-50,50,"Gen particle vertex X","");
+  map["gp_vy"]		= MakeTH1FPlot("gp_vy","",100,-50,50,"Gen particle vertex Y","");
+  map["gp_vz"]		= MakeTH1FPlot("gp_vz","",100,-50,50,"Gen particle vertex Z","");
+  map["gp_Lxy"]		= MakeTH1FPlot("gp_Lxy","",100,0,100,"Gen particle vertex XY dist","");
+  map["gp_Lxyz"]	= MakeTH1FPlot("gp_Lxyz","",100,0,100,"Gen particle vertex XYZ dist","");
+  // gen particle mother properties
+  map["gm_id"]		= MakeTH1FPlot("gm_id","",200,-100,100,"Gen mom ID","");
+  map["gm_stat"]	= MakeTH1FPlot("gm_stat","",200,-100,100,"Gen mom status","");
+  map["gm_pt"]		= MakeTH1FPlot("gm_pt","",20,0,100,"Gen mom p_T","");
+  map["gm_e"]		= MakeTH1FPlot("gm_e","",20,0,100,"Gen mom E","");
+  map["gm_m"]		= MakeTH1FPlot("gm_m","",100,0,500,"Gen mom mass",""); 
+  map["gm_eta"]		= MakeTH1FPlot("gm_eta","",20,-4,4,"Gen mom #eta","");
+  map["gm_phi"]		= MakeTH1FPlot("gm_phi","",20,-4,4,"Gen mom #phi","");
+  map["gm_vx"]		= MakeTH1FPlot("gm_vx","",100,-50,50,"Gen mom vertex X","");
+  map["gm_vy"]		= MakeTH1FPlot("gm_vy","",100,-50,50,"Gen mom vertex Y","");
+  map["gm_vz"]		= MakeTH1FPlot("gm_vz","",100,-50,50,"Gen mom vertex Z","");
+  map["gm_Lxy"]		= MakeTH1FPlot("gm_Lxy","",100,0,100,"Gen mom vertex XY dist","");
+  map["gm_Lz"]		= MakeTH1FPlot("gm_Lz","",100,0,100,"Gen mom vertex Z dist","");
+  map["gm_Lxyz"]	= MakeTH1FPlot("gm_Lxyz","",100,0,100,"Gen mom vertex XYZ dist","");
+  map["gm_ctau"]	= MakeTH1FPlot("gm_ctau","",100,0,500,"Gen mom c#tau","");
+
+  // 2D histos
+  map2["gp_vx_id"]	= MakeTH2FPlot("gp_vx_id","",200,-100,100,100,-50,50,"Gen particle ID","Gen particle vertex X");
+  map2["gp_vy_id"]	= MakeTH2FPlot("gp_vy_id","",200,-100,100,100,-50,50,"Gen particle ID","Gen particle vertex Y");
+  map2["gp_vz_id"]	= MakeTH2FPlot("gp_vz_id","",200,-100,100,100,-50,50,"Gen particle ID","Gen particle vertex Z");
 
 }
 
@@ -58,7 +92,14 @@ TH1F * MakeTH1FPlot(const TString hname, const TString htitle, const int nbins, 
   return hist;
 }// end MakeTH1FPlot
 
-void saveplots(TString odir, TFile* fout, TH1map & map){
+TH2F * MakeTH2FPlot(const TString hname, const TString htitle, const Int_t xnbins, const Double_t xlow, const Double_t xhigh, const Int_t ynbins, const Double_t ylow, const Double_t yhigh, const TString xtitle, const TString ytitle){
+  TH2F * hist = new TH2F(hname.Data(),htitle.Data(),xnbins,xlow,xhigh,ynbins,ylow,yhigh);
+  hist->GetXaxis()->SetTitle(xtitle.Data());
+  hist->GetYaxis()->SetTitle(ytitle.Data());
+  return hist;
+}// end MakeTH2FPlot
+
+void save1Dplots(TString odir, TFile* fout, const TH1map & map){
   fout->cd();
   std::cout << "Saving" << std::endl; 
 
@@ -77,12 +118,34 @@ void saveplots(TString odir, TFile* fout, TH1map & map){
     c->SaveAs(Form("%s%s.pdf",odir.Data(),name.Data()));
 
     delete c;
-     
   }// end loop over histos
 
-}// end saveplots
+}// end save1Dplots
 
-void run(TString path, TString file, TString out, TFile* fout){
+void save2Dplots(TString odir, TFile* fout, const TH2map & map){
+  fout->cd();
+  std::cout << "Saving" << std::endl; 
+
+  for (const auto & h:map){ // loop over histos
+    const auto & name = h.first;
+    const auto & hist = h.second;
+
+    // save to output file
+    hist->Write(hist->GetName(),TObject::kWriteDelete);
+
+    // draw to canvas
+    TCanvas *c = new TCanvas("c","c");
+    c->cd();
+    hist->Draw("HIST");
+    c->SaveAs(Form("%s%s.png",odir.Data(),name.Data()));
+    c->SaveAs(Form("%s%s.pdf",odir.Data(),name.Data()));
+
+    delete c;
+  }// end loop over histos
+
+}// end save2Dplots
+
+void run(TString file, TString out, TFile* fout){
 
   // get input file
   TFile *f = TFile::Open(Form("%s",file.Data()),"READ");
@@ -255,40 +318,69 @@ void run(TString path, TString file, TString out, TFile* fout){
   t->SetBranchAddress("mom_ctau", &mom_ctau, &b_mom_ctau);
 
   // setup histo map
-  TH1map hmap;
-  histos(hmap);
+  TH1map h1map;
+  TH2map h2map;
+  histos(h1map, h2map);
 
   // loop over events
   unsigned int nentries = t->GetEntries();
   for (unsigned int entry = 0; entry < nentries; entry++){
     t->GetEntry(entry);
 
-    hmap["ngj"]->Fill(ngenjets);
-    hmap["ngp"]->Fill(ngenpart); 
+    h1map["ngj"]->Fill(ngenjets);
+    h1map["ngp"]->Fill(ngenpart); 
 
     // loop over gen jets
     for (unsigned int gj = 0; gj < ngenjets; gj++){
-      hmap["gj_vx"]->Fill((*genjet_vx)[gj]); 
-      hmap["gj_vy"]->Fill((*genjet_vy)[gj]); 
-      hmap["gj_vz"]->Fill((*genjet_vz)[gj]); 
+      h1map["gj_pt"]->Fill((*genjet_pt)[gj]);
+      h1map["gj_e"]->Fill((*genjet_e)[gj]);
+      h1map["gj_eta"]->Fill((*genjet_eta)[gj]);
+      h1map["gj_phi"]->Fill((*genjet_phi)[gj]);
+      h1map["gj_nd"]->Fill((*genjet_ndaug)[gj]);
+      h1map["gj_nc"]->Fill((*genjet_nconst)[gj]);
+      h1map["gj_vx"]->Fill((*genjet_vx)[gj]); 
+      h1map["gj_vy"]->Fill((*genjet_vy)[gj]); 
+      h1map["gj_vz"]->Fill((*genjet_vz)[gj]); 
     }// end loop over genjets
 
     // loop over gen particles
     for (unsigned int gp = 0; gp < ngenpart; gp++){
+      if (entry==0) std::cout << "ID: " << (*genpar_id)[gp] << " mom ID: " << (*mom_id)[gp] << std::endl;
+      h2map["gp_vx_id"]->Fill((*genpar_id)[gp],(*genpar_vx)[gp]);
+      h2map["gp_vy_id"]->Fill((*genpar_id)[gp],(*genpar_vy)[gp]);
+      h2map["gp_vz_id"]->Fill((*genpar_id)[gp],(*genpar_vz)[gp]);
       // gen particles info
-      hmap["gp_vx"]->Fill((*genpar_vx)[gp]);
-      hmap["gp_vy"]->Fill((*genpar_vy)[gp]);
-      hmap["gp_vz"]->Fill((*genpar_vz)[gp]);
+      h1map["gp_id"]->Fill((*genpar_id)[gp]);
+      h1map["gp_pt"]->Fill((*genpar_pt)[gp]);
+      h1map["gp_eta"]->Fill((*genpar_eta)[gp]);
+      h1map["gp_phi"]->Fill((*genpar_phi)[gp]);
+      h1map["gp_vx"]->Fill((*genpar_vx)[gp]);
+      h1map["gp_vy"]->Fill((*genpar_vy)[gp]);
+      h1map["gp_vz"]->Fill((*genpar_vz)[gp]);
+      h1map["gp_Lxy"]->Fill((*genpar_Lxy)[gp]);
+      h1map["gp_Lxyz"]->Fill((*genpar_Lxyz)[gp]);
       // mother particle info
-      hmap["gm_vx"]->Fill((*mom_vx)[gp]);
-      hmap["gm_vy"]->Fill((*mom_vy)[gp]);
-      hmap["gm_vz"]->Fill((*mom_vz)[gp]);
+      h1map["gm_id"]->Fill((*mom_id)[gp]);
+      h1map["gm_stat"]->Fill((*mom_stat)[gp]);
+      h1map["gm_e"]->Fill((*mom_e)[gp]);
+      h1map["gm_m"]->Fill((*mom_m)[gp]);
+      h1map["gm_pt"]->Fill((*mom_pt)[gp]);
+      h1map["gm_eta"]->Fill((*mom_eta)[gp]);
+      h1map["gm_phi"]->Fill((*mom_phi)[gp]);
+      h1map["gm_vx"]->Fill((*mom_vx)[gp]);
+      h1map["gm_vy"]->Fill((*mom_vy)[gp]);
+      h1map["gm_vz"]->Fill((*mom_vz)[gp]);
+      h1map["gm_Lxy"]->Fill((*mom_Lxy)[gp]);
+      h1map["gm_Lz"]->Fill((*mom_Lz)[gp]);
+      h1map["gm_Lxyz"]->Fill((*mom_Lxyz)[gp]);
+      h1map["gm_ctau"]->Fill((*mom_ctau)[gp]);
     }// end loop over gen particles
 
   }// end loop over events
  
   // save plots
-  saveplots(out,fout,hmap);
+  save1Dplots(out,fout,h1map);
+  save2Dplots(out,fout,h2map);
  
 } 
 

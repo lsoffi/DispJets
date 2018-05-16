@@ -238,7 +238,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   if (genparticles.isValid()){ // make sure have genparticles collection
 
     for (const auto & genpar_iter : *genparticles){ // loop over genparticles
-      if (genpar_iter.status() != 23) continue; // scip any non-final state particles
+      //if (genpar_iter.status() != 1) continue; // scip any non-final state particles
       ngenpart++;  // number stable particles
 
       // vertex position 
@@ -273,44 +273,53 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
       int n = 0;
 
-      std::vector< const reco::Candidate * > mother;
-      mother.push_back(genpar_iter.mother());
-      std::sort(mother.begin(),mother.end(),pTsort);
+      //std::cout << "pdg ID: " << genpar_iter.pdgId() << " w/ status = " << genpar_iter.status() << "=> vx,vy,vz: " << vx << "," << vy << "," << vz << std::endl;
+      //if (genpar_iter.mother() != NULL){
+      //  for (const auto & mom : *genpar_iter.mother()){
+      //    std::cout << "--- mom ID: " << mom.pdgId() << " w/ status = " << mom.status() << "=> vx,vy,vz: " << mom.vx() << "," << mom.vy() << "," << mom.vz() << std::endl; 
+      //  }
+      //} 
 
-      for (const auto & mom : *genpar_iter.mother()){
-        nmothers++; // number of mothers
-        if (verbose_) std::cout << "Number of mothers: " << nmothers << std::endl;
-        if (n != 0) continue;
-        n++;
-        mx = mom.vx();
-        my = mom.vy();
-        mz = mom.vz();
-        dx = vx - mx;
-        dy = vy - my;
-        dz = vz - mz;
-        mBeta = mom.p()/mom.energy();    // mom beta
-        mGama = mom.energy()/mom.mass(); // mom gamma
-        mLxy  = std::sqrt(dx*dx + dy*dy); 
-        mLxyz = std::sqrt(dx*dx + dy*dy + dz*dz); 
-        mcTau = std::sqrt(dx*dx + dy*dy + dz*dz) / (mBeta * mGama); 
+      if (genpar_iter.mother() != NULL){ 
+        std::vector< const reco::Candidate * > mother;
+        mother.push_back(genpar_iter.mother());
+        std::sort(mother.begin(),mother.end(),pTsort);
 
-        mom_id.push_back(mom.pdgId());
-        mom_stat.push_back(mom.status());
-        mom_m.push_back(mom.mass());
-        mom_e.push_back(mom.energy());
-        mom_pt.push_back(mom.pt());
-        mom_eta.push_back(mom.eta());
-        mom_phi.push_back(mom.phi());
-        mom_vx.push_back(mx);
-        mom_vy.push_back(my);
-        mom_vz.push_back(mz);
-        mom_beta.push_back(mBeta);
-        mom_gama.push_back(mGama);
-        mom_Lz.push_back(dz);
-        mom_Lxy.push_back(mLxy);
-        mom_Lxyz.push_back(mLxyz);
-        mom_ctau.push_back(mcTau);
-      }
+        for (const auto & mom : *genpar_iter.mother()){
+          nmothers++; // number of mothers
+          if (verbose_) std::cout << "Number of mothers: " << nmothers << std::endl;
+          if (n != 0) continue;
+          n++;
+          mx = mom.vx();
+          my = mom.vy();
+          mz = mom.vz();
+          dx = vx - mx;
+          dy = vy - my;
+          dz = vz - mz;
+          mBeta = mom.p()/mom.energy();    // mom beta
+          mGama = mom.energy()/mom.mass(); // mom gamma
+          mLxy  = std::sqrt(dx*dx + dy*dy); 
+          mLxyz = std::sqrt(dx*dx + dy*dy + dz*dz); 
+          mcTau = std::sqrt(dx*dx + dy*dy + dz*dz) / (mBeta * mGama); 
+
+          mom_id.push_back(mom.pdgId());
+          mom_stat.push_back(mom.status());
+          mom_m.push_back(mom.mass());
+          mom_e.push_back(mom.energy());
+          mom_pt.push_back(mom.pt());
+          mom_eta.push_back(mom.eta());
+          mom_phi.push_back(mom.phi());
+          mom_vx.push_back(mx);
+          mom_vy.push_back(my);
+          mom_vz.push_back(mz);
+          mom_beta.push_back(mBeta);
+          mom_gama.push_back(mGama);
+          mom_Lz.push_back(dz);
+          mom_Lxy.push_back(mLxy);
+          mom_Lxyz.push_back(mLxyz);
+          mom_ctau.push_back(mcTau);
+        }
+      } 
 
     }// end loop over genparticles
   }// end if genparticles.isValid
