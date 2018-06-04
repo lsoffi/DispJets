@@ -15,7 +15,7 @@ TH2F * MakeTH2FPlot( const TString, const TString, const int, const double, cons
 void drawFromTree(){
 
   TString path = "../";
-  TString out  = "~/www/Plots/DispJets/GenLevelPlots/";
+  TString out  = "~/www/Plots/DispJets/GenLevelPlots/Test/";
   std::vector< TString > file;
   file.push_back(Form("%sntuple_dispjets.root",path.Data()));
   int nsamples = file.size();
@@ -31,9 +31,9 @@ void drawFromTree(){
 void histos( TH1map & map , TH2map & map2){
 
   // 1D histos
-
   map["ngj"]		= MakeTH1FPlot("ngj","",20,0,20,"Num. gen jets","");
   map["ngp"]		= MakeTH1FPlot("ngp","",20,0,20,"Num. gen particles","");
+
   // gen jet properties
   map["gj_pt"]		= MakeTH1FPlot("gj_pt","",20,0,100,"Gen jet p_T","");
   map["gj_e"]		= MakeTH1FPlot("gj_e","",20,0,100,"Gen jet E",""); 
@@ -41,20 +41,42 @@ void histos( TH1map & map , TH2map & map2){
   map["gj_phi"]		= MakeTH1FPlot("gj_phi","",20,-4,4,"Gen jet #phi","");
   map["gj_nd"]		= MakeTH1FPlot("gj_nd","",10,0,10,"Gen jet num. daughters","");
   map["gj_nc"]		= MakeTH1FPlot("gj_nc","",10,0,10,"Gen jet num. constituents","");
-  map["gj_vx"]		= MakeTH1FPlot("gj_vx","",100,-50,50,"Gen jet vertex X","");
-  map["gj_vy"]		= MakeTH1FPlot("gj_vy","",100,-50,50,"Gen jet vertex Y","");
-  map["gj_vz"]		= MakeTH1FPlot("gj_vz","",100,-50,50,"Gen jet vertex Z","");
+  map["gj_vx"]		= MakeTH1FPlot("gj_vx","",400,-200,200,"Gen jet vertex X","");
+  map["gj_vy"]		= MakeTH1FPlot("gj_vy","",400,-200,200,"Gen jet vertex Y","");
+  map["gj_vz"]		= MakeTH1FPlot("gj_vz","",400,-200,200,"Gen jet vertex Z","");
+  map["gj0_c_id"]	= MakeTH1FPlot("gj0_c_id","",400,-200,200,"Gen jet 0 const. ID","");
+  map["gj0_c_pt"]	= MakeTH1FPlot("gj0_c_pt","",300,0,300,"Gen jet 0 const. p_T","");
+  map["gj0_c_vx"]	= MakeTH1FPlot("gj0_c_vx","",400,-200,200,"Gen jet 0 const. vertex X","");
+  map["gj0_c_vy"]	= MakeTH1FPlot("gj0_c_vy","",400,-200,200,"Gen jet 0 const. vertex Y","");
+  map["gj0_c_vz"]	= MakeTH1FPlot("gj0_c_vz","",400,-200,200,"Gen jet 0 const. vertex Z","");
+  map["gj1_c_id"]	= MakeTH1FPlot("gj1_c_id","",400,-200,200,"Gen jet 1 const. ID","");
+  map["gj1_c_pt"]	= MakeTH1FPlot("gj1_c_pt","",300,0,300,"Gen jet 1 const. p_T","");
+  map["gj1_c_vx"]	= MakeTH1FPlot("gj1_c_vx","",400,-200,200,"Gen jet 1 const. vertex X","");
+  map["gj1_c_vy"]	= MakeTH1FPlot("gj1_c_vy","",400,-200,200,"Gen jet 1 const. vertex Y","");
+  map["gj1_c_vz"]	= MakeTH1FPlot("gj1_c_vz","",400,-200,200,"Gen jet 1 const. vertex Z","");
+  map["gj2_c_id"]	= MakeTH1FPlot("gj2_c_id","",400,-200,200,"Gen jet 2 const. ID","");
+  map["gj2_c_pt"]	= MakeTH1FPlot("gj2_c_pt","",300,0,300,"Gen jet 2 const. p_T","");
+  map["gj2_c_vx"]	= MakeTH1FPlot("gj2_c_vx","",400,-200,200,"Gen jet 2 const. vertex X","");
+  map["gj2_c_vy"]	= MakeTH1FPlot("gj2_c_vy","",400,-200,200,"Gen jet 2 const. vertex Y","");
+  map["gj2_c_vz"]	= MakeTH1FPlot("gj2_c_vz","",400,-200,200,"Gen jet 2 const. vertex Z","");
+  map["gj3_c_id"]	= MakeTH1FPlot("gj3_c_id","",400,-200,200,"Gen jet 3 const. ID","");
+  map["gj3_c_pt"]	= MakeTH1FPlot("gj3_c_pt","",300,0,300,"Gen jet 3 const. p_T","");
+  map["gj3_c_vx"]	= MakeTH1FPlot("gj3_c_vx","",400,-200,200,"Gen jet 3 const. vertex X","");
+  map["gj3_c_vy"]	= MakeTH1FPlot("gj3_c_vy","",400,-200,200,"Gen jet 3 const. vertex Y","");
+  map["gj3_c_vz"]	= MakeTH1FPlot("gj3_c_vz","",400,-200,200,"Gen jet 3 const. vertex Z","");
+
   // gen particle properties
   map["gp_id"]		= MakeTH1FPlot("gp_id","",200,-100,100,"Gen particle ID","");
   map["gp_pt"]		= MakeTH1FPlot("gp_pt","",20,0,100,"Gen particle p_T","");
   map["gp_e"]		= MakeTH1FPlot("gp_e","",20,0,100,"Gen particle E",""); 
   map["gp_eta"]		= MakeTH1FPlot("gp_eta","",20,-4,4,"Gen particle #eta","");
   map["gp_phi"]		= MakeTH1FPlot("gp_phi","",20,-4,4,"Gen particle #phi","");
-  map["gp_vx"]		= MakeTH1FPlot("gp_vx","",100,-50,50,"Gen particle vertex X","");
-  map["gp_vy"]		= MakeTH1FPlot("gp_vy","",100,-50,50,"Gen particle vertex Y","");
-  map["gp_vz"]		= MakeTH1FPlot("gp_vz","",100,-50,50,"Gen particle vertex Z","");
+  map["gp_vx"]		= MakeTH1FPlot("gp_vx","",400,-200,200,"Gen particle vertex X","");
+  map["gp_vy"]		= MakeTH1FPlot("gp_vy","",400,-200,200,"Gen particle vertex Y","");
+  map["gp_vz"]		= MakeTH1FPlot("gp_vz","",400,-200,200,"Gen particle vertex Z","");
   map["gp_Lxy"]		= MakeTH1FPlot("gp_Lxy","",100,0,100,"Gen particle vertex XY dist","");
   map["gp_Lxyz"]	= MakeTH1FPlot("gp_Lxyz","",100,0,100,"Gen particle vertex XYZ dist","");
+
   // gen particle mother properties
   map["gm_id"]		= MakeTH1FPlot("gm_id","",200,-100,100,"Gen mom ID","");
   map["gm_stat"]	= MakeTH1FPlot("gm_stat","",200,-100,100,"Gen mom status","");
@@ -63,18 +85,18 @@ void histos( TH1map & map , TH2map & map2){
   map["gm_m"]		= MakeTH1FPlot("gm_m","",100,0,500,"Gen mom mass",""); 
   map["gm_eta"]		= MakeTH1FPlot("gm_eta","",20,-4,4,"Gen mom #eta","");
   map["gm_phi"]		= MakeTH1FPlot("gm_phi","",20,-4,4,"Gen mom #phi","");
-  map["gm_vx"]		= MakeTH1FPlot("gm_vx","",100,-50,50,"Gen mom vertex X","");
-  map["gm_vy"]		= MakeTH1FPlot("gm_vy","",100,-50,50,"Gen mom vertex Y","");
-  map["gm_vz"]		= MakeTH1FPlot("gm_vz","",100,-50,50,"Gen mom vertex Z","");
+  map["gm_vx"]		= MakeTH1FPlot("gm_vx","",400,-200,200,"Gen mom vertex X","");
+  map["gm_vy"]		= MakeTH1FPlot("gm_vy","",400,-200,200,"Gen mom vertex Y","");
+  map["gm_vz"]		= MakeTH1FPlot("gm_vz","",400,-200,200,"Gen mom vertex Z","");
   map["gm_Lxy"]		= MakeTH1FPlot("gm_Lxy","",100,0,100,"Gen mom vertex XY dist","");
   map["gm_Lz"]		= MakeTH1FPlot("gm_Lz","",100,0,100,"Gen mom vertex Z dist","");
   map["gm_Lxyz"]	= MakeTH1FPlot("gm_Lxyz","",100,0,100,"Gen mom vertex XYZ dist","");
   map["gm_ctau"]	= MakeTH1FPlot("gm_ctau","",100,0,500,"Gen mom c#tau","");
 
   // 2D histos
-  map2["gp_vx_id"]	= MakeTH2FPlot("gp_vx_id","",200,-100,100,100,-50,50,"Gen particle ID","Gen particle vertex X");
-  map2["gp_vy_id"]	= MakeTH2FPlot("gp_vy_id","",200,-100,100,100,-50,50,"Gen particle ID","Gen particle vertex Y");
-  map2["gp_vz_id"]	= MakeTH2FPlot("gp_vz_id","",200,-100,100,100,-50,50,"Gen particle ID","Gen particle vertex Z");
+  map2["gp_vx_id"]	= MakeTH2FPlot("gp_vx_id","",400,-200,200,400,-200,200,"Gen particle ID","Gen particle vertex X");
+  map2["gp_vy_id"]	= MakeTH2FPlot("gp_vy_id","",400,-200,200,400,-200,200,"Gen particle ID","Gen particle vertex Y");
+  map2["gp_vz_id"]	= MakeTH2FPlot("gp_vz_id","",400,-200,200,400,-200,200,"Gen particle ID","Gen particle vertex Z");
 
 }
 
@@ -170,6 +192,33 @@ void run(TString file, TString out, TFile* fout){
   vector<float>   *genjet_vx;
   vector<float>   *genjet_vy;
   vector<float>   *genjet_vz;
+  vector<int>     *genjet_i;
+
+  vector<float>   *genjet0_const_st;
+  vector<float>   *genjet0_const_id;
+  vector<float>   *genjet0_const_pt;
+  vector<float>   *genjet0_const_vx;
+  vector<float>   *genjet0_const_vy;
+  vector<float>   *genjet0_const_vz;
+  vector<float>   *genjet1_const_st;
+  vector<float>   *genjet1_const_id;
+  vector<float>   *genjet1_const_pt;
+  vector<float>   *genjet1_const_vx;
+  vector<float>   *genjet1_const_vy;
+  vector<float>   *genjet1_const_vz;
+  vector<float>   *genjet2_const_st;
+  vector<float>   *genjet2_const_id;
+  vector<float>   *genjet2_const_pt;
+  vector<float>   *genjet2_const_vx;
+  vector<float>   *genjet2_const_vy;
+  vector<float>   *genjet2_const_vz;
+  vector<float>   *genjet3_const_st;
+  vector<float>   *genjet3_const_id;
+  vector<float>   *genjet3_const_pt;
+  vector<float>   *genjet3_const_vx;
+  vector<float>   *genjet3_const_vy;
+  vector<float>   *genjet3_const_vz;
+
   Int_t           ngenpart;
   vector<int>     *genpar_id;
   vector<float>   *genpar_pt;
@@ -207,6 +256,31 @@ void run(TString file, TString out, TFile* fout){
    genjet_vx = 0;
    genjet_vy = 0;
    genjet_vz = 0;
+   genjet_i = 0;
+   genjet0_const_st = 0;
+   genjet0_const_id = 0;
+   genjet0_const_pt = 0;
+   genjet0_const_vx = 0;
+   genjet0_const_vy = 0;
+   genjet0_const_vz = 0;
+   genjet1_const_st = 0;
+   genjet1_const_id = 0;
+   genjet1_const_pt = 0;
+   genjet1_const_vx = 0;
+   genjet1_const_vy = 0;
+   genjet1_const_vz = 0;
+   genjet2_const_st = 0;
+   genjet2_const_id = 0;
+   genjet2_const_pt = 0;
+   genjet2_const_vx = 0;
+   genjet2_const_vy = 0;
+   genjet2_const_vz = 0;
+   genjet3_const_st = 0;
+   genjet3_const_id = 0;
+   genjet3_const_pt = 0;
+   genjet3_const_vx = 0;
+   genjet3_const_vy = 0;
+   genjet3_const_vz = 0;
    genpar_id = 0;
    genpar_pt = 0;
    genpar_eta = 0;
@@ -248,6 +322,31 @@ void run(TString file, TString out, TFile* fout){
   TBranch        *b_genjet_vx;   //!
   TBranch        *b_genjet_vy;   //!
   TBranch        *b_genjet_vz;   //!
+  TBranch        *b_genjet_i;   //!
+  TBranch        *b_genjet0_const_st;   //!
+  TBranch        *b_genjet0_const_id;   //!
+  TBranch        *b_genjet0_const_pt;   //!
+  TBranch        *b_genjet0_const_vx;   //!
+  TBranch        *b_genjet0_const_vy;   //!
+  TBranch        *b_genjet0_const_vz;   //!
+  TBranch        *b_genjet1_const_st;   //!
+  TBranch        *b_genjet1_const_id;   //!
+  TBranch        *b_genjet1_const_pt;   //!
+  TBranch        *b_genjet1_const_vx;   //!
+  TBranch        *b_genjet1_const_vy;   //!
+  TBranch        *b_genjet1_const_vz;   //!
+  TBranch        *b_genjet2_const_st;   //!
+  TBranch        *b_genjet2_const_id;   //!
+  TBranch        *b_genjet2_const_pt;   //!
+  TBranch        *b_genjet2_const_vx;   //!
+  TBranch        *b_genjet2_const_vy;   //!
+  TBranch        *b_genjet2_const_vz;   //!
+  TBranch        *b_genjet3_const_st;   //!
+  TBranch        *b_genjet3_const_id;   //!
+  TBranch        *b_genjet3_const_pt;   //!
+  TBranch        *b_genjet3_const_vx;   //!
+  TBranch        *b_genjet3_const_vy;   //!
+  TBranch        *b_genjet3_const_vz;   //!
   TBranch        *b_ngenpart;   //!
   TBranch        *b_genpar_id;   //!
   TBranch        *b_genpar_pt;   //!
@@ -290,6 +389,31 @@ void run(TString file, TString out, TFile* fout){
   t->SetBranchAddress("genjet_vx", &genjet_vx, &b_genjet_vx);
   t->SetBranchAddress("genjet_vy", &genjet_vy, &b_genjet_vy);
   t->SetBranchAddress("genjet_vz", &genjet_vz, &b_genjet_vz);
+  t->SetBranchAddress("genjet_i", &genjet_i, &b_genjet_i);
+  t->SetBranchAddress("genjet0_const_st", &genjet0_const_st, &b_genjet0_const_st);
+  t->SetBranchAddress("genjet0_const_id", &genjet0_const_id, &b_genjet0_const_id);
+  t->SetBranchAddress("genjet0_const_pt", &genjet0_const_pt, &b_genjet0_const_pt);
+  t->SetBranchAddress("genjet0_const_vx", &genjet0_const_vx, &b_genjet0_const_vx);
+  t->SetBranchAddress("genjet0_const_vy", &genjet0_const_vy, &b_genjet0_const_vy);
+  t->SetBranchAddress("genjet0_const_vz", &genjet0_const_vz, &b_genjet0_const_vz);
+  t->SetBranchAddress("genjet1_const_st", &genjet1_const_st, &b_genjet1_const_st);
+  t->SetBranchAddress("genjet1_const_id", &genjet1_const_id, &b_genjet1_const_id);
+  t->SetBranchAddress("genjet1_const_pt", &genjet1_const_pt, &b_genjet1_const_pt);
+  t->SetBranchAddress("genjet1_const_vx", &genjet1_const_vx, &b_genjet1_const_vx);
+  t->SetBranchAddress("genjet1_const_vy", &genjet1_const_vy, &b_genjet1_const_vy);
+  t->SetBranchAddress("genjet1_const_vz", &genjet1_const_vz, &b_genjet1_const_vz);
+  t->SetBranchAddress("genjet2_const_st", &genjet2_const_st, &b_genjet2_const_st);
+  t->SetBranchAddress("genjet2_const_id", &genjet2_const_id, &b_genjet2_const_id);
+  t->SetBranchAddress("genjet2_const_pt", &genjet2_const_pt, &b_genjet2_const_pt);
+  t->SetBranchAddress("genjet2_const_vx", &genjet2_const_vx, &b_genjet2_const_vx);
+  t->SetBranchAddress("genjet2_const_vy", &genjet2_const_vy, &b_genjet2_const_vy);
+  t->SetBranchAddress("genjet2_const_vz", &genjet2_const_vz, &b_genjet2_const_vz);
+  t->SetBranchAddress("genjet3_const_st", &genjet3_const_st, &b_genjet3_const_st);
+  t->SetBranchAddress("genjet3_const_id", &genjet3_const_id, &b_genjet3_const_id);
+  t->SetBranchAddress("genjet3_const_pt", &genjet3_const_pt, &b_genjet3_const_pt);
+  t->SetBranchAddress("genjet3_const_vx", &genjet3_const_vx, &b_genjet3_const_vx);
+  t->SetBranchAddress("genjet3_const_vy", &genjet3_const_vy, &b_genjet3_const_vy);
+  t->SetBranchAddress("genjet3_const_vz", &genjet3_const_vz, &b_genjet3_const_vz);
   t->SetBranchAddress("ngenpart", &ngenpart, &b_ngenpart);
   t->SetBranchAddress("genpar_id", &genpar_id, &b_genpar_id);
   t->SetBranchAddress("genpar_pt", &genpar_pt, &b_genpar_pt);
@@ -343,9 +467,45 @@ void run(TString file, TString out, TFile* fout){
       h1map["gj_vz"]->Fill((*genjet_vz)[gj]); 
     }// end loop over genjets
 
+    // loop over particles in gen jet0
+    for (unsigned int i = 0; i < (*genjet0_const_id).size(); i++){
+      if ((*genjet0_const_st)[i] != 1) continue;
+      h1map["gj0_c_id"]->Fill((*genjet0_const_id)[i]);
+      h1map["gj0_c_pt"]->Fill((*genjet0_const_pt)[i]);
+      h1map["gj0_c_vx"]->Fill((*genjet0_const_vx)[i]);
+      h1map["gj0_c_vy"]->Fill((*genjet0_const_vy)[i]);
+      h1map["gj0_c_vz"]->Fill((*genjet0_const_vz)[i]);
+    }
+    // loop over particles in gen jet1
+    for (unsigned int i = 0; i < (*genjet1_const_id).size(); i++){
+      if ((*genjet1_const_st)[i] != 1) continue;
+      h1map["gj1_c_id"]->Fill((*genjet1_const_id)[i]);
+      h1map["gj1_c_pt"]->Fill((*genjet1_const_pt)[i]);
+      h1map["gj1_c_vx"]->Fill((*genjet1_const_vx)[i]);
+      h1map["gj1_c_vy"]->Fill((*genjet1_const_vy)[i]);
+      h1map["gj1_c_vz"]->Fill((*genjet1_const_vz)[i]);
+    }
+    // loop over particles in gen jet2
+    for (unsigned int i = 0; i < (*genjet2_const_id).size(); i++){
+      if ((*genjet2_const_st)[i] != 1) continue;
+      h1map["gj2_c_id"]->Fill((*genjet2_const_id)[i]);
+      h1map["gj2_c_pt"]->Fill((*genjet2_const_pt)[i]);
+      h1map["gj2_c_vx"]->Fill((*genjet2_const_vx)[i]);
+      h1map["gj2_c_vy"]->Fill((*genjet2_const_vy)[i]);
+      h1map["gj2_c_vz"]->Fill((*genjet2_const_vz)[i]);
+    }
+    // loop over particles in gen jet3
+    for (unsigned int i = 0; i < (*genjet3_const_id).size(); i++){
+      if ((*genjet3_const_st)[i] != 1) continue;
+      h1map["gj3_c_id"]->Fill((*genjet3_const_id)[i]);
+      h1map["gj3_c_pt"]->Fill((*genjet3_const_pt)[i]);
+      h1map["gj3_c_vx"]->Fill((*genjet3_const_vx)[i]);
+      h1map["gj3_c_vy"]->Fill((*genjet3_const_vy)[i]);
+      h1map["gj3_c_vz"]->Fill((*genjet3_const_vz)[i]);
+    }
+
     // loop over gen particles
     for (unsigned int gp = 0; gp < ngenpart; gp++){
-      if (entry==0) std::cout << "ID: " << (*genpar_id)[gp] << " mom ID: " << (*mom_id)[gp] << std::endl;
       h2map["gp_vx_id"]->Fill((*genpar_id)[gp],(*genpar_vx)[gp]);
       h2map["gp_vy_id"]->Fill((*genpar_id)[gp],(*genpar_vy)[gp]);
       h2map["gp_vz_id"]->Fill((*genpar_id)[gp],(*genpar_vz)[gp]);
@@ -359,6 +519,8 @@ void run(TString file, TString out, TFile* fout){
       h1map["gp_vz"]->Fill((*genpar_vz)[gp]);
       h1map["gp_Lxy"]->Fill((*genpar_Lxy)[gp]);
       h1map["gp_Lxyz"]->Fill((*genpar_Lxyz)[gp]);
+      if ((*mom_id)[gp] == 0 || (*mom_stat)[gp] == 0) continue;
+      if (entry==0) std::cout << "ID: " << (*genpar_id)[gp] << " mom ID: " << (*mom_id)[gp] << std::endl;
       // mother particle info
       h1map["gm_id"]->Fill((*mom_id)[gp]);
       h1map["gm_stat"]->Fill((*mom_stat)[gp]);
