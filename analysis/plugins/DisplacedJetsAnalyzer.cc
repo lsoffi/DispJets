@@ -58,6 +58,11 @@ struct tree_struc_{
   std::vector<float>		genjet_vx;
   std::vector<float>		genjet_vy;
   std::vector<float>		genjet_vz;
+  std::vector<int>		genpar_qnum;
+  std::vector<int>		genpar_match_q1;
+  std::vector<int>		genpar_match_q2;
+  std::vector<int>		genpar_match_q3;
+  std::vector<int>		genpar_match_q4;
   std::vector<float>		genjet_i;
   std::vector<int>		genjet_match;
   std::vector<float>		genjet0_const_st;
@@ -98,6 +103,7 @@ struct tree_struc_{
   std::vector<int>		mom_stat;
   std::vector<float>		mom_e;
   std::vector<float>		mom_m;
+  std::vector<float>		mom_p;
   std::vector<float>		mom_pt;
   std::vector<float>		mom_eta;
   std::vector<float>		mom_phi;
@@ -333,6 +339,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<int>	mom_stat;
   std::vector<float>	mom_e;
   std::vector<float>	mom_m;
+  std::vector<float>	mom_p;
   std::vector<float>	mom_pt;
   std::vector<float>	mom_eta;
   std::vector<float>	mom_phi;
@@ -345,25 +352,58 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<float>	mom_Lz;
   std::vector<float>	mom_Lxyz;
   std::vector<float>	mom_ctau;
+  std::vector<int>	quarknum;
+  std::vector<int>	match_q1;
+  std::vector<int>	match_q2;
+  std::vector<int>	match_q3;
+  std::vector<int>	match_q4;
 
   if (genparticles.isValid()){ // make sure have genparticles collection
 
+    float q1_eta = -10000;
+    float q2_eta = -10000;
+    float q3_eta = -10000;
+    float q4_eta = -10000;
+    float q1_phi = -10000;
+    float q2_phi = -10000;
+    float q3_phi = -10000;
+    float q4_phi = -10000;
+    int   momID  = -10000;
+    int   gmomID = -10000;
+    bool  findmom = false;
+
+
+    // store the 4 quarks that are produced in the hard interaction
+    int interestingjet = 0;
     for (const auto & genpar_iter : *genparticles){ // loop over genparticles
+      // check that the mom or gmom is from the resonance
+      if (genpar_iter.mother() != NULL){
+        momID   = genpar_iter.mother()->pdgId();
+        if (genpar_iter.mother()->mother() != NULL) gmomID  = genpar_iter.mother()->mother()->pdgId();
+      }
+      findmom = (momID == 35 || momID == 36 || gmomID == 35 || gmomID == 36);
+      // only final quarks of hard interaction w/ found mom are interesting 
+      if (genpar_iter.status()!=23 || !findmom){ 
+         quarknum.push_back(0); 
+         continue;
+      }
+      // save interesting quarks
+      interestingjet++;
+      quarknum.push_back(interestingjet);
+      if (interestingjet==1){ q1_eta = genpar_iter.eta(); q1_phi = genpar_iter.phi(); } 
+      if (interestingjet==2){ q2_eta = genpar_iter.eta(); q2_phi = genpar_iter.phi(); } 
+      if (interestingjet==3){ q3_eta = genpar_iter.eta(); q3_phi = genpar_iter.phi(); } 
+      if (interestingjet==4){ q4_eta = genpar_iter.eta(); q4_phi = genpar_iter.phi(); } 
+    }// end loop over genparticles
 
-      //if (abs(genpar_iter.pdgId()) == 35 || abs(genpar_iter.pdgId()) == 36){
-      //  std::cout << genpar_iter.pdgId() << " status: " << genpar_iter.status() << std::endl;
-      //  std::cout << "number of daughters: " << genpar_iter.numberOfDaughters() << std::endl;
-      //  if (genpar_iter.numberOfDaughters() == 1) std::cout << "--- " << genpar_iter.daughter(0)->pdgId() << " " << genpar_iter.daughter(0)->status() << std::endl;
-      //  if (genpar_iter.numberOfDaughters() >= 2){
-      //    std::cout << "--- " << genpar_iter.daughter(0)->pdgId() << " " << genpar_iter.daughter(0)->status() << std::endl;
-      //    std::cout << "--- " << genpar_iter.daughter(1)->pdgId() << " " << genpar_iter.daughter(1)->status() << std::endl;
-      //  }
-      //}
-
+    std::cout << "here" << std::endl;
+    for (const auto & genpar_iter : *genparticles){ // loop over genparticles
 
       // status: http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
       // * 21-29: particles of the hardest process (23 outgoing)
-      if (genpar_iter.status() >= 21 && genpar_iter.status() <= 29) continue; 
+      // * 1: final state particles
+      if (genpar_iter.status() < 21 && genpar_iter.status() > 29 && genpar_iter.status() != 1) continue;
+      //if (genpar_iter.status() != 23) continue; 
       ngenpart++;  // number stable particles
 
       // vertex position 
@@ -384,36 +424,77 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       genpar_Lxy.push_back(gLxy);
       genpar_Lxyz.push_back(gLxyz);
 
-      float mx = 0;
-      float my = 0;
-      float mz = 0;
-      float dx = 0;
-      float dy = 0;
-      float dz = 0;
-      float mBeta = 0; 
-      float mGama = 0; 
-      float mLxy  = 0; 
-      float mLxyz = 0; 
-      float mcTau = 0; 
+      // matching to hard scatter quarks 
+      float dR1 = deltaR(q1_eta,q1_phi,genpar_iter.eta(),genpar_iter.phi()); 
+      float dR2 = deltaR(q2_eta,q2_phi,genpar_iter.eta(),genpar_iter.phi()); 
+      float dR3 = deltaR(q3_eta,q3_phi,genpar_iter.eta(),genpar_iter.phi()); 
+      float dR4 = deltaR(q4_eta,q4_phi,genpar_iter.eta(),genpar_iter.phi()); 
+      if (dR1 < 0.4) match_q1.push_back(1);
+      else           match_q1.push_back(0);
+      if (dR2 < 0.4) match_q2.push_back(1);
+      else           match_q2.push_back(0);
+      if (dR3 < 0.4) match_q3.push_back(1);
+      else           match_q3.push_back(0);
+      if (dR4 < 0.4) match_q4.push_back(1);
+      else           match_q4.push_back(0);
 
       int n = 0;
+      float mx = -10000;
+      float my = -10000;
+      float mz = -10000;
+      float dx = -10000;
+      float dy = -10000;
+      float dz = -10000;
+      float mBeta = -10000; 
+      float mGama = -10000; 
+      float mLxy  = -10000; 
+      float mLxyz = -10000; 
+      float mcTau = -10000; 
 
-      //std::cout << "pdg ID: " << genpar_iter.pdgId() << " w/ status = " << genpar_iter.status() << "=> vx,vy,vz: " << vx << "," << vy << "," << vz << std::endl;
+      // initialize mom info (even for gen particles w/o a mom) 
+      int	tmp_mom_id  	= -10000;
+      int	tmp_mom_stat 	= -10000;
+      float	tmp_mom_e 	= -10000;
+      float	tmp_mom_m 	= -10000;
+      float	tmp_mom_p 	= -10000;
+      float	tmp_mom_pt 	= -10000;
+      float	tmp_mom_eta 	= -10000;
+      float	tmp_mom_phi 	= -10000;
+      float	tmp_mom_vx 	= -10000;
+      float	tmp_mom_vy 	= -10000;
+      float	tmp_mom_vz 	= -10000;
+      float	tmp_mom_beta 	= -10000;
+      float	tmp_mom_gama 	= -10000;
+      float	tmp_mom_Lxy 	= -10000;
+      float	tmp_mom_Lz 	= -10000;
+      float	tmp_mom_Lxyz 	= -10000;
+      float	tmp_mom_ctau 	= -10000;
+
+      //std::cout << "particle: " << genpar_iter.pdgId() << std::endl;
       //if (genpar_iter.mother() != NULL){
+      //  std::vector< const reco::Candidate * > mother;
+      //  mother.push_back(genpar_iter.mother());
       //  for (const auto & mom : *genpar_iter.mother()){
-      //    std::cout << "--- mom ID: " << mom.pdgId() << " w/ status = " << mom.status() << "=> vx,vy,vz: " << mom.vx() << "," << mom.vy() << "," << mom.vz() << std::endl; 
-      //  }
-      //} 
+      //    std::cout << " - mom:  "  << mom.pdgId()     << std::endl;
+      //    std::vector< const reco::Candidate * > gmother;
+      //    gmother.push_back(genpar_iter.mother()->mother());
+      //    for (const auto & gmom : *genpar_iter.mother()->mother()){
+      //      std::cout << " -- gmom: " << gmom.pdgId() << " (status: " << gmom.status() << ")" << std::endl;
+      //    } 
+      //  }      
+      //}
 
       if (genpar_iter.mother() != NULL){ 
         std::vector< const reco::Candidate * > mother;
         mother.push_back(genpar_iter.mother());
+        nmothers = mother.size();
+        if (verbose_) std::cout << "Number of mothers: " << nmothers << std::endl;
         std::sort(mother.begin(),mother.end(),pTsort);
 
         for (const auto & mom : *genpar_iter.mother()){
-          nmothers++; // number of mothers
-          if (verbose_) std::cout << "Number of mothers: " << nmothers << std::endl;
-          //if (n != 0) continue;
+
+          if (abs(mom.pdgId()) != 35 && abs(mom.pdgId()) != 36) continue;
+          //if (n != 0) continue; // only keep highest pt mother
           n++;
           mx = mom.vx();
           my = mom.vy();
@@ -427,30 +508,49 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
           mLxyz = std::sqrt(dx*dx + dy*dy + dz*dz); 
           mcTau = std::sqrt(dx*dx + dy*dy + dz*dz) / (mBeta * mGama); 
 
-          if (abs(mom.pdgId()) != 35 && abs(mom.pdgId()) != 36) continue;
-          mom_id.push_back(mom.pdgId());
-          mom_stat.push_back(mom.status());
-          mom_m.push_back(mom.mass());
-          mom_e.push_back(mom.energy());
-          mom_pt.push_back(mom.pt());
-          mom_eta.push_back(mom.eta());
-          mom_phi.push_back(mom.phi());
-          mom_vx.push_back(mx);
-          mom_vy.push_back(my);
-          mom_vz.push_back(mz);
-          mom_beta.push_back(mBeta);
-          mom_gama.push_back(mGama);
-          mom_Lz.push_back(dz);
-          mom_Lxy.push_back(mLxy);
-          mom_Lxyz.push_back(mLxyz);
-          mom_ctau.push_back(mcTau);
-        }
-      } 
+          tmp_mom_id  	= mom.pdgId();
+          tmp_mom_stat 	= mom.status();
+          tmp_mom_e 	= mom.mass();
+          tmp_mom_m 	= mom.energy();
+          tmp_mom_p 	= mom.p();
+          tmp_mom_pt 	= mom.pt();
+          tmp_mom_eta 	= mom.eta();
+          tmp_mom_phi 	= mom.phi();
+          tmp_mom_vx 	= mx;
+          tmp_mom_vy 	= my;
+          tmp_mom_vz 	= mz;
+          tmp_mom_beta 	= mBeta;
+          tmp_mom_gama 	= mGama;
+          tmp_mom_Lxy 	= dz;
+          tmp_mom_Lz 	= mLxy;
+          tmp_mom_Lxyz 	= mLxyz;
+          tmp_mom_ctau 	= mcTau;
+          
+        }// end loop over genparticle mothers
+      }// end if genparticles.mother.isValid
+
+      // store only one mom info per gen particle 
+      mom_id.push_back(tmp_mom_id);
+      mom_stat.push_back(tmp_mom_stat);
+      mom_e.push_back(tmp_mom_e);
+      mom_m.push_back(tmp_mom_m);
+      mom_p.push_back(tmp_mom_p);
+      mom_pt.push_back(tmp_mom_pt);
+      mom_eta.push_back(tmp_mom_eta);
+      mom_phi.push_back(tmp_mom_phi);
+      mom_vx.push_back(tmp_mom_vx);
+      mom_vy.push_back(tmp_mom_vy);
+      mom_vz.push_back(tmp_mom_vz);
+      mom_beta.push_back(tmp_mom_beta);
+      mom_gama.push_back(tmp_mom_gama);
+      mom_Lxy.push_back(tmp_mom_Lxy);
+      mom_Lz.push_back(tmp_mom_Lz);
+      mom_Lxyz.push_back(tmp_mom_Lxyz);
+      mom_ctau.push_back(tmp_mom_ctau);
 
     }// end loop over genparticles
   }// end if genparticles.isValid
   else std::cout << "WARNING: genparticles collection is NOT valid" << std::endl;
-
 
   // --- setup tree values
   initTreeStructure();
@@ -509,7 +609,8 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
   if (verbose_) std::cout << "mom_id   " << mom_id.size()    << std::endl; 
   if (verbose_) std::cout << "mom_stat " << mom_stat.size()  << std::endl; 
-  if (verbose_) std::cout << "mom_e    " << mom_e.size()     << std::endl; 
+  if (verbose_) std::cout << "mom_e    " << mom_e.size()     << std::endl;
+  if (verbose_) std::cout << "mom_p    " << mom_p.size()     << std::endl; 
   if (verbose_) std::cout << "mom_m    " << mom_m.size()     << std::endl;  
   if (verbose_) std::cout << "mom_pt   " << mom_pt.size()    << std::endl;  
   if (verbose_) std::cout << "mom_eta  " << mom_eta.size()   << std::endl;  
@@ -534,9 +635,15 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genpar_vz.push_back(genpar_vz[ip]);
     tree_.genpar_Lxy.push_back(genpar_Lxy[ip]);
     tree_.genpar_Lxyz.push_back(genpar_Lxyz[ip]);
+    tree_.genpar_qnum.push_back(quarknum[ip]);
+    tree_.genpar_match_q1.push_back(match_q1[ip]);
+    tree_.genpar_match_q2.push_back(match_q2[ip]);
+    tree_.genpar_match_q3.push_back(match_q3[ip]);
+    tree_.genpar_match_q4.push_back(match_q4[ip]);
     tree_.mom_id.push_back(mom_id[ip]);
     tree_.mom_stat.push_back(mom_stat[ip]);
     tree_.mom_e.push_back(mom_e[ip]);
+    tree_.mom_p.push_back(mom_p[ip]);
     tree_.mom_m.push_back(mom_m[ip]);
     tree_.mom_pt.push_back(mom_pt[ip]);
     tree_.mom_eta.push_back(mom_eta[ip]);
@@ -625,12 +732,18 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("genpar_vz",		&tree_.genpar_vz);
   tree->Branch("genpar_Lxy",		&tree_.genpar_Lxy);
   tree->Branch("genpar_Lxyz",		&tree_.genpar_Lxyz);
+  tree->Branch("genpar_qnum",		&tree_.genpar_qnum);
+  tree->Branch("genpar_match_q1",	&tree_.genpar_match_q1);
+  tree->Branch("genpar_match_q2",	&tree_.genpar_match_q2);
+  tree->Branch("genpar_match_q3",	&tree_.genpar_match_q3);
+  tree->Branch("genpar_match_q4",	&tree_.genpar_match_q4);
 
   // gen particle mom stuff
   tree->Branch("mom_id",		&tree_.mom_id);
   tree->Branch("mom_stat",		&tree_.mom_stat);
   tree->Branch("mom_e",			&tree_.mom_e);
   tree->Branch("mom_m",			&tree_.mom_m);
+  tree->Branch("mom_p",			&tree_.mom_p);
   tree->Branch("mom_pt",		&tree_.mom_pt);
   tree->Branch("mom_eta",		&tree_.mom_eta);
   tree->Branch("mom_phi",		&tree_.mom_phi);
