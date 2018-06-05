@@ -19,7 +19,7 @@ opts.register('sampleID',
 opts.parseArguments()
 
 # max events to process
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 
 # get input file
 process.source = cms.Source("PoolSource",
@@ -43,6 +43,7 @@ process.dispjets = cms.EDAnalyzer('DisplacedJetsAnalyzer',
 				sampleID	= cms.untracked.int32(opts.sampleID),
 				genjets		= cms.untracked.InputTag("ak4GenJets", "", "SIM"),
                                 genparticles    = cms.untracked.InputTag("genParticles", "", "SIM"),
+				vertices	= cms.untracked.InputTag("g4SimHits", "", "SIM"),
 )
 
 if opts.debug: process.p = cms.Path( process.content*process.dispjets )

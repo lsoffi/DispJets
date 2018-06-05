@@ -33,6 +33,7 @@
 // specific
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "SimDataFormats/Vertex/interface/SimVertex.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/Math/interface/deltaR.h"
@@ -145,6 +146,7 @@ class DisplacedJetsAnalyzer : public edm::EDAnalyzer {
       // tokens
       edm::EDGetTokenT<std::vector<reco::GenJet> >		genjetToken_;
       edm::EDGetTokenT<std::vector<reco::GenParticle> >		genparticleToken_;
+      edm::EDGetTokenT<std::vector<SimVertex> >			verticesToken_;
 
       // setup tree;
       TTree* tree;
@@ -166,6 +168,7 @@ DisplacedJetsAnalyzer::DisplacedJetsAnalyzer(const edm::ParameterSet& iConfig)
    sampleID_		= iConfig.getUntrackedParameter<int>("sampleID",0);
    genjetToken_		= consumes<std::vector<reco::GenJet> >(iConfig.getUntrackedParameter<edm::InputTag>("genjets"));
    genparticleToken_    = consumes<std::vector<reco::GenParticle> >(iConfig.getUntrackedParameter<edm::InputTag>("genparticles"));
+   verticesToken_	= consumes<std::vector<SimVertex> >(iConfig.getUntrackedParameter<edm::InputTag>("vertices"));
 
 }
 
@@ -196,10 +199,15 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   edm::Handle<std::vector<reco::GenParticle> > genparticles;
   iEvent.getByToken(genparticleToken_, genparticles);
 
+  edm::Handle<std::vector<SimVertex> > vertices;
+  iEvent.getByToken(verticesToken_, vertices);
+
   // --- general event info 
   unsigned long int event = iEvent.id().event();   
   int run   = iEvent.id().run();
   int lumi  = iEvent.luminosityBlock();
+  int nvtx  = vertices->size();
+  std::cout << "nvtx " << nvtx << std::endl;
 
   // --- genjet info
   int ngenjets = 0;
@@ -396,7 +404,6 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       if (interestingjet==4){ q4_eta = genpar_iter.eta(); q4_phi = genpar_iter.phi(); } 
     }// end loop over genparticles
 
-    std::cout << "here" << std::endl;
     for (const auto & genpar_iter : *genparticles){ // loop over genparticles
 
       // status: http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
