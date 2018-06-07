@@ -408,6 +408,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
     int mom35 = 0; 
     int mom36 = 0;
+    float q1_mx   = -10000;
+    float q1_my   = -10000;
+    float q1_mz   = -10000;
 
     // store the 4 quarks that are produced in the hard interaction
     int interestingjet = 0;
@@ -506,7 +509,16 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         if (std::abs(mom->pdgId())==36) mom36++;
         if (std::abs(mom->pdgId())==35 && mom35>1) tmp_mom_dupl = 1;
         if (std::abs(mom->pdgId())==36 && mom36>1) tmp_mom_dupl = 1;
+        if (interestingjet==1){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
+        if (interestingjet==2){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
+        if (interestingjet==3){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
+        if (interestingjet==4){ q1_mx = mx; q1_my = my; q1_mz = mz;}
       }
+
+      //std::cout << " q1: " << q1_mx << " " << q1_mx << " " << q1_mx << std::endl;
+      //std::cout << " q2: " << q2_mx << " " << q2_mx << " " << q2_mx << std::endl;
+      //std::cout << " q3: " << q3_mx << " " << q3_mx << " " << q3_mx << std::endl;
+      //std::cout << " q4: " << q4_mx << " " << q4_mx << " " << q4_mx << std::endl;
 
       // store only one mom info per gen particle 
       mom_id.push_back(tmp_mom_id);
@@ -604,8 +616,8 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
       // calculating timing delay
       getXYZ(116.10,genpar_iter.theta(),genpar_iter.phi(),xT,yT,zT); // find xyz coord of pt on timing layer
-      float lo  = getL(xT,yT,zT);          // distance from IP to point on timing layer
-      float lT  = getL(xT-vx,yT-vy,zT-vz); // distance from vtx to point on timing layer
+      float lo = getL(xT-q1_mx,yT-q1_my,zT-q1_mz); // distance from PV to point on timing layer
+      float lT  = getL(xT-vx,yT-vy,zT-vz);         // distance from SV to point on timing layer
       genpar_lo.push_back(lo);
       genpar_la.push_back(lT);
       genpar_beta.push_back(genpar_iter.p()/genpar_iter.energy());
