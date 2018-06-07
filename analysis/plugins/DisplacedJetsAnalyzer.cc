@@ -140,6 +140,7 @@ class DisplacedJetsAnalyzer : public edm::EDAnalyzer {
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
       void initTreeStructure();
+      void clearVectors(); 
       void getXYZ(float r, float theta, float phi, float & x, float & y, float & z);
       float getL(float x, float y, float z);
 
@@ -217,43 +218,82 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
   // --- genjet info
   int ngenjets = 0;
-  std::vector<float>		genjet_pt;
-  std::vector<float>		genjet_e;
-  std::vector<float>		genjet_eta;
-  std::vector<float>		genjet_phi;
-  std::vector<int>		genjet_ndaug;
-  std::vector<int>		genjet_nconst;
-  std::vector<float>		genjet_vx;
-  std::vector<float>		genjet_vy;
-  std::vector<float>		genjet_vz;
+  std::vector<float>	genjet_pt;
+  std::vector<float>	genjet_e;
+  std::vector<float>	genjet_eta;
+  std::vector<float>	genjet_phi;
+  std::vector<int>  	genjet_ndaug;
+  std::vector<int>  	genjet_nconst;
+  std::vector<float>	genjet_vx;
+  std::vector<float>	genjet_vy;
+  std::vector<float>	genjet_vz;
 
   // --- genjet constituent info
-  std::vector<int>              genjet_i;
-  std::vector<int>		genjet_match;
-  std::vector<float>            genjet0_const_st;
-  std::vector<float>            genjet0_const_id;
-  std::vector<float>		genjet0_const_pt;
-  std::vector<float>		genjet0_const_vx;
-  std::vector<float>		genjet0_const_vy;
-  std::vector<float>		genjet0_const_vz;
-  std::vector<float>		genjet1_const_st;
-  std::vector<float>		genjet1_const_id;
-  std::vector<float>		genjet1_const_pt;
-  std::vector<float>		genjet1_const_vx;
-  std::vector<float>		genjet1_const_vy;
-  std::vector<float>		genjet1_const_vz;
-  std::vector<float>		genjet2_const_st;
-  std::vector<float>		genjet2_const_id;
-  std::vector<float>		genjet2_const_pt;
-  std::vector<float>		genjet2_const_vx;
-  std::vector<float>		genjet2_const_vy;
-  std::vector<float>		genjet2_const_vz;
-  std::vector<float>		genjet3_const_st;
-  std::vector<float>		genjet3_const_id;
-  std::vector<float>		genjet3_const_pt;
-  std::vector<float>		genjet3_const_vx;
-  std::vector<float>		genjet3_const_vy;
-  std::vector<float>		genjet3_const_vz;
+  std::vector<int>  	genjet_i;
+  std::vector<int>  	genjet_match;
+  std::vector<float>	genjet0_const_st;
+  std::vector<float>	genjet0_const_id;
+  std::vector<float>	genjet0_const_pt;
+  std::vector<float>	genjet0_const_vx;
+  std::vector<float>	genjet0_const_vy;
+  std::vector<float>	genjet0_const_vz;
+  std::vector<float>	genjet1_const_st;
+  std::vector<float>	genjet1_const_id;
+  std::vector<float>	genjet1_const_pt;
+  std::vector<float>	genjet1_const_vx;
+  std::vector<float>	genjet1_const_vy;
+  std::vector<float>	genjet1_const_vz;
+  std::vector<float>	genjet2_const_st;
+  std::vector<float>	genjet2_const_id;
+  std::vector<float>	genjet2_const_pt;
+  std::vector<float>	genjet2_const_vx;
+  std::vector<float>	genjet2_const_vy;
+  std::vector<float>	genjet2_const_vz;
+  std::vector<float>	genjet3_const_st;
+  std::vector<float>	genjet3_const_id;
+  std::vector<float>	genjet3_const_pt;
+  std::vector<float>	genjet3_const_vx;
+  std::vector<float>	genjet3_const_vy;
+  std::vector<float>	genjet3_const_vz;
+
+  // --- genparticles info
+  int ngenpart = 0;
+  std::vector<int>	genpar_id;
+  std::vector<int>	genpar_stat;
+  std::vector<float>	genpar_e;
+  std::vector<float>	genpar_pt;
+  std::vector<float>	genpar_eta;
+  std::vector<float>	genpar_phi;
+  std::vector<float>	genpar_vx;
+  std::vector<float>	genpar_vy;
+  std::vector<float>	genpar_vz;
+  std::vector<float>	genpar_Lxy;
+  std::vector<float>	genpar_Lxyz;
+  std::vector<float>	genpar_lo;
+  std::vector<float>	genpar_la;
+  int nmothers = 0;
+  std::vector<int>	mom_id;
+  std::vector<int>	mom_stat;
+  std::vector<float>	mom_e;
+  std::vector<float>	mom_m;
+  std::vector<float>	mom_p;
+  std::vector<float>	mom_pt;
+  std::vector<float>	mom_eta;
+  std::vector<float>	mom_phi;
+  std::vector<float>    mom_vx;
+  std::vector<float>	mom_vy;
+  std::vector<float>	mom_vz;
+  std::vector<float>	mom_beta;
+  std::vector<float>	mom_gama;
+  std::vector<float>	mom_Lxy;
+  std::vector<float>	mom_Lz;
+  std::vector<float>	mom_Lxyz;
+  std::vector<float>	mom_ctau;
+  std::vector<int>	quarknum;
+  std::vector<int>	match_q1;
+  std::vector<int>	match_q2;
+  std::vector<int>	match_q3;
+  std::vector<int>	match_q4;
 
   if (genjets.isValid()){ // make sure have genjet collection
     ngenjets = genjets->size();
@@ -335,46 +375,6 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   }// end if genjets.isValid
   else std::cout << "WARNING: genjets collection is NOT valid" << std::endl;
 
-  // --- genparticles info
-  int ngenpart = 0;
-  std::vector<int>	genpar_id;
-  std::vector<int>	genpar_stat;
-  std::vector<float>	genpar_e;
-  std::vector<float>	genpar_pt;
-  std::vector<float>	genpar_eta;
-  std::vector<float>	genpar_phi;
-  std::vector<float>	genpar_vx;
-  std::vector<float>	genpar_vy;
-  std::vector<float>	genpar_vz;
-  std::vector<float>	genpar_Lxy;
-  std::vector<float>	genpar_Lxyz;
-  std::vector<float>	genpar_lo;
-  std::vector<float>	genpar_la;
-  int nmothers = 0;
-  std::vector<int>	mom_id;
-  std::vector<int>	mom_stat;
-  std::vector<float>	mom_e;
-  std::vector<float>	mom_m;
-  std::vector<float>	mom_p;
-  std::vector<float>	mom_pt;
-  std::vector<float>	mom_eta;
-  std::vector<float>	mom_phi;
-  std::vector<float>    mom_vx;
-  std::vector<float>	mom_vy;
-  std::vector<float>	mom_vz;
-  std::vector<float>	mom_beta;
-  std::vector<float>	mom_gama;
-  std::vector<float>	mom_Lxy;
-  std::vector<float>	mom_Lz;
-  std::vector<float>	mom_Lxyz;
-  std::vector<float>	mom_ctau;
-  std::vector<int>	quarknum;
-  std::vector<int>	match_q1;
-  std::vector<int>	match_q2;
-  std::vector<int>	match_q3;
-  std::vector<int>	match_q4;
-
-
   if (genparticles.isValid()){ // make sure have genparticles collection
 
     // variables to store eta and phi of the quarks of interest
@@ -444,8 +444,6 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       std::vector< const reco::Candidate * > mother;
       mother.push_back(genpar_iter.mother(0));
 
-      std::cout << " size mom = " << mother.size() << std::endl;
-      
       // now look at mothers/grandmothers
       for (const auto & mom : mother ){
         nmothers++;
@@ -479,7 +477,6 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         tmp_mom_Lxyz 	= mLxyz;
         tmp_mom_ctau 	= mcTau;
       }
-      std::cout << "nmothers = " << nmothers << std::endl;
 
       // store only one mom info per gen particle 
       mom_id.push_back(tmp_mom_id);
@@ -577,6 +574,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
   // --- setup tree values
   initTreeStructure();
+  // --- clear all vectors
+  clearVectors();
+
   tree_.sample		= sampleID_;
   tree_.run		= run;
   tree_.lumi		= lumi;
@@ -799,6 +799,7 @@ void DisplacedJetsAnalyzer::getXYZ(float r, float theta, float phi, float & x, f
   y = r*std::sin(phi);
   z = r*std::tan(theta);
 }
+
 float DisplacedJetsAnalyzer::getL(float x, float y, float z)
 {
   float L;
@@ -818,6 +819,82 @@ void DisplacedJetsAnalyzer::initTreeStructure()
   tree_.ngenjets	= -500.;
   tree_.ngenpart	= -500.;
   tree_.nmothers	= -500.;
+}
+
+// ------------ clear vectors in trees ------
+void DisplacedJetsAnalyzer::clearVectors()
+{
+
+  tree_.genjet_pt.clear();
+  tree_.genjet_e.clear();
+  tree_.genjet_eta.clear();
+  tree_.genjet_phi.clear();
+  tree_.genjet_ndaug.clear();
+  tree_.genjet_nconst.clear();
+  tree_.genjet_vx.clear();
+  tree_.genjet_vy.clear();
+  tree_.genjet_vz.clear();
+  tree_.genpar_qnum.clear();
+  tree_.genpar_match_q1.clear();
+  tree_.genpar_match_q2.clear();
+  tree_.genpar_match_q3.clear();
+  tree_.genpar_match_q4.clear();
+  tree_.genjet_i.clear();
+  tree_.genjet_match.clear();
+  tree_.genjet0_const_st.clear();
+  tree_.genjet0_const_id.clear();
+  tree_.genjet0_const_pt.clear();
+  tree_.genjet0_const_vx.clear();
+  tree_.genjet0_const_vy.clear();
+  tree_.genjet0_const_vz.clear();
+  tree_.genjet1_const_st.clear();
+  tree_.genjet1_const_id.clear();
+  tree_.genjet1_const_pt.clear();
+  tree_.genjet1_const_vx.clear();
+  tree_.genjet1_const_vy.clear();
+  tree_.genjet1_const_vz.clear();
+  tree_.genjet2_const_st.clear();
+  tree_.genjet2_const_id.clear();
+  tree_.genjet2_const_pt.clear();
+  tree_.genjet2_const_vx.clear();
+  tree_.genjet2_const_vy.clear();
+  tree_.genjet2_const_vz.clear();
+  tree_.genjet3_const_st.clear();
+  tree_.genjet3_const_id.clear();
+  tree_.genjet3_const_pt.clear();
+  tree_.genjet3_const_vx.clear();
+  tree_.genjet3_const_vy.clear();
+  tree_.genjet3_const_vz.clear();
+  tree_.genpar_id.clear();
+  tree_.genpar_stat.clear();
+  tree_.genpar_pt.clear();
+  tree_.genpar_eta.clear();
+  tree_.genpar_phi.clear();
+  tree_.genpar_vx.clear();
+  tree_.genpar_vy.clear();
+  tree_.genpar_vz.clear();
+  tree_.genpar_Lxy.clear();
+  tree_.genpar_Lxyz.clear();
+  tree_.genpar_la.clear();
+  tree_.genpar_lo.clear();
+  tree_.mom_id.clear();
+  tree_.mom_stat.clear();
+  tree_.mom_e.clear();
+  tree_.mom_m.clear();
+  tree_.mom_p.clear();
+  tree_.mom_pt.clear();
+  tree_.mom_eta.clear();
+  tree_.mom_phi.clear();
+  tree_.mom_vx.clear();
+  tree_.mom_vy.clear();
+  tree_.mom_vz.clear();
+  tree_.mom_beta.clear();
+  tree_.mom_gama.clear();
+  tree_.mom_Lxy.clear();
+  tree_.mom_Lz.clear();
+  tree_.mom_Lxyz.clear();
+  tree_.mom_ctau.clear();
+
 }
 
 //---------------------------------------------------------------------------------------------------
