@@ -65,6 +65,7 @@ TH1F * MakeTH1FPlot(const TString hname, const TString htitle, const int nbins, 
   hist->GetYaxis()->SetTitle(ytitleNew.Data());
   hist->Sumw2();
   gStyle->SetOptStat(1111111);
+  gStyle->SetOptFit(1);
   return hist;
 }// end MakeTH1FPlot
 
@@ -90,6 +91,12 @@ void save1Dplots(TString odir, TFile* fout, const TH1map & map){
     TCanvas *c = new TCanvas("c","c");
     c->cd();
     hist->Draw("HIST");
+
+    if (name=="LL_cTau"){
+      TF1* f = (TF1*)hist->GetFunction("expo");
+      f->Draw("SAME");
+    }
+
     c->SetLogy(0);
     c->SaveAs(Form("%s%s.png",odir.Data(),name.Data()));
     c->SaveAs(Form("%s%s.pdf",odir.Data(),name.Data()));
@@ -602,7 +609,10 @@ void run(TString file, TString out, TFile* fout){
      h2map["tnear_tfar"]->Fill(dt_jet_near,dt_jet_far);
 
   }// end loop over events
- 
+
+  // fit ctau plot
+  h1map["LL_cTau"]->Fit("expo");
+
   // save plots
   save1Dplots(out,fout,h1map);
   save2Dplots(out,fout,h2map);
