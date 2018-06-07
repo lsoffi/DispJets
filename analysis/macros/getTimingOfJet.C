@@ -5,14 +5,14 @@ typedef std::map<TString, TH1F*> TH1map;
 typedef std::map<TString, TH2F*> TH2map;
 
 // declare other functions
-void getJetTime( );
 void run( TString, TString, TFile* );
 void histos( TH1map & , TH2map & );
 void save1Dplots( TString, TFile* , const TH1map & );
 void save2Dplots( TString, TFile* , const TH2map & );
 TH1F * MakeTH1FPlot( const TString, const TString, const int, const double, const double, const TString, const TString );
 TH2F * MakeTH2FPlot( const TString, const TString, const int, const double, const double, const int, const double, const double, const TString, const TString );
-
+float calcDeltaT(const float, const float, const float, const float, const float, const float);
+float calcAvgT(const float, const int);
 
 // ---------------------------------- 
 // ----------- START ----------------
@@ -187,6 +187,7 @@ void run(TString file, TString out, TFile* fout){
    vector<int>     *genpar_match_q4;
    vector<float>   *genpar_lo;
    vector<float>   *genpar_la;
+   Int_t           *nmothers;
    vector<int>     *mom_id;
    vector<int>     *mom_stat;
    vector<float>   *mom_e;
@@ -334,6 +335,7 @@ void run(TString file, TString out, TFile* fout){
    TBranch        *b_genpar_match_q4;   //!
    TBranch        *b_genpar_lo;   //!
    TBranch        *b_genpar_la;   //!
+   TBranch        *b_nmothers;   //!
    TBranch        *b_mom_id;   //!
    TBranch        *b_mom_stat;   //!
    TBranch        *b_mom_e;   //!
@@ -411,6 +413,7 @@ void run(TString file, TString out, TFile* fout){
    t->SetBranchAddress("genpar_match_q4", &genpar_match_q4, &b_genpar_match_q4);
    t->SetBranchAddress("genpar_lo", &genpar_lo, &b_genpar_lo);
    t->SetBranchAddress("genpar_la", &genpar_la, &b_genpar_la);
+   t->SetBranchAddress("nmothers", &nmothers, &b_nmothers);
    t->SetBranchAddress("mom_id", &mom_id, &b_mom_id);
    t->SetBranchAddress("mom_stat", &mom_stat, &b_mom_stat);
    t->SetBranchAddress("mom_e", &mom_e, &b_mom_e);
@@ -439,68 +442,109 @@ void run(TString file, TString out, TFile* fout){
    for (unsigned int entry = 0; entry < nentries; entry++){
      t->GetEntry(entry);
 
-     int nmothers = (*mom_beta).size();
-
-     std::cout << "nmom " << nmothers << std::endl;
-
-     for (unsigned int gm = 0; gm < nmothers; gm++){
+     for (unsigned int gm = 0; gm < 4; gm++){
+     //for (unsigned int gm = 0; gm < nmothers; gm++){
        h1map["LL_beta"]->Fill((*mom_beta)[gm]);
        h1map["LL_cTau"]->Fill((*mom_ctau)[gm]);
      }
 
      float jet1_mom_beta   = (*mom_beta)[1];
      float jet1_mom_lxyz   = (*mom_Lxyz)[1];
+     float jet2_mom_beta   = (*mom_beta)[2];
+     float jet2_mom_lxyz   = (*mom_Lxyz)[2];
+     float jet3_mom_beta   = (*mom_beta)[3];
+     float jet3_mom_lxyz   = (*mom_Lxyz)[3];
+     float jet4_mom_beta   = (*mom_beta)[4];
+     float jet4_mom_lxyz   = (*mom_Lxyz)[4];
 
-     float jet1_const_beta = 0;
-     float jet1_const_lxyz = 0;
-     float jet1_orig_beta  = 0;
-     float jet1_orig_lxyz  = 0;
+     float jet_const_beta  = 0;
+     float jet_const_lxyz  = 0;
+     float jet_orig_beta   = 0;
+     float jet_orig_lxyz   = 0;
 
-     float jet1_const_dl   = 0;
      float jet1_const_dt   = 0;
      float jet1_time_raw   = 0;
      float jet1_nconst     = 0;
-     float jet1_time_avg   = 0;
+     float jet2_const_dt   = 0;
+     float jet2_time_raw   = 0;
+     float jet2_nconst     = 0;
+     float jet3_const_dt   = 0;
+     float jet3_time_raw   = 0;
+     float jet3_nconst     = 0;
+     float jet4_const_dt   = 0;
+     float jet4_time_raw   = 0;
+     float jet4_nconst     = 0;
 
      // loop over gen particles
      for (unsigned int gp = 0; gp < ngenpart; gp++){
 
-       if ( (*genpar_stat)[gp] != 1 ) continue; // keep only final state particles
-       
-       if ( (*genpar_match_q1)[gp] == 1){ // check particle matches q1 jet
+       if ( (*genpar_stat)[gp] != 1 ) continue;           // keep only final state particles
+       if ( std::abs((*genpar_eta)[gp]) > 1.5 ) continue; // keep only particles in barrel 
 
+       // check particle matches jet
+       if ( (*genpar_match_q1)[gp]==1 || (*genpar_match_q2)[gp]==1 || (*genpar_match_q3)[gp]==1 || (*genpar_match_q4)[gp]==1 ){ 
          // constituent info
          h1map["const_id"]->Fill((*genpar_id)[gp]);
          h1map["const_pt"]->Fill((*genpar_pt)[gp]);
          h1map["const_eta"]->Fill(std::abs((*genpar_eta)[gp]));
+       }
+   
+       // constituent particle info
+       jet_const_beta = 1.0;
+       jet_const_lxyz = (*genpar_la)[gp];
+       // hypothetical non-LL info
+       jet_orig_beta  = 1.0;
+       jet_orig_lxyz  = (*genpar_lo)[gp];
 
-         jet1_nconst+=1.0; // counter for jet constituents
-         
-         // const particle
-         jet1_const_beta = 1.0;
-         jet1_const_lxyz = (*genpar_la)[gp];
-
-         // not-LL 
-         jet1_orig_beta  = 1.0;
-         jet1_orig_lxyz  = (*genpar_lo)[gp];
-
-         // delta T for const
-         jet1_const_dl  = (float)jet1_mom_lxyz/(float)jet1_mom_beta + (float)jet1_const_lxyz/(float)jet1_const_beta - (float)jet1_orig_lxyz/(float)jet1_orig_beta;
-         jet1_const_dt  = (float)jet1_const_dl/30.0; // divide by c (30cm/ns)
+       // --- q1 jet
+       if ( (*genpar_match_q1)[gp]==1){
+         jet1_nconst  += 1.0; // counter for jet constituents
+         jet1_const_dt = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
+         jet1_time_raw += jet1_const_dt;
          h1map["const_t"]->Fill(jet1_const_dt);
          if (entry==0) h1map["const_t_ev1"]->Fill(jet1_const_dt);
-         // total delta T for jet
-         jet1_time_raw   += jet1_const_dt;
-
-
        }// end match to q1 jet
+
+       // --- q2 jet
+       if ( (*genpar_match_q2)[gp]==1){
+         jet2_nconst  += 1.0; // counter for jet constituents
+         jet2_const_dt = calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
+         jet2_time_raw += jet2_const_dt;
+         h1map["const_t"]->Fill(jet2_const_dt);
+       }// end match to q2 jet
+
+       // --- q3 jet
+       if ( (*genpar_match_q3)[gp]==1){
+         jet3_nconst  += 1.0; // counter for jet constituents
+         jet3_const_dt = calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
+         jet3_time_raw += jet3_const_dt;
+         h1map["const_t"]->Fill(jet3_const_dt);
+       }// end match to q3 jet
+
+       // --- q4 jet
+       if ( (*genpar_match_q4)[gp]==1){
+         jet4_nconst  += 1.0; // counter for jet constituents
+         jet4_const_dt = calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
+         jet4_time_raw += jet4_const_dt;
+         h1map["const_t"]->Fill(jet4_const_dt);
+       }// end match to q4 jet
 
      }// end loop over gen particles
 
-     jet1_time_avg = (float)jet1_time_raw/(float)jet1_nconst; 
+     float jet1_time_avg = calcAvgT(jet1_time_raw,jet1_nconst);
+     float jet2_time_avg = calcAvgT(jet2_time_raw,jet2_nconst);
+     float jet3_time_avg = calcAvgT(jet3_time_raw,jet3_nconst);
+     float jet4_time_avg = calcAvgT(jet4_time_raw,jet4_nconst);
 
-     h1map["nconst"]->Fill(jet1_nconst); 
+     h1map["nconst"]->Fill(jet1_nconst);
+     h1map["nconst"]->Fill(jet2_nconst);
+     h1map["nconst"]->Fill(jet3_nconst);
+     h1map["nconst"]->Fill(jet4_nconst);
+      
      h1map["jet_t"]->Fill(jet1_time_avg);
+     h1map["jet_t"]->Fill(jet2_time_avg);
+     h1map["jet_t"]->Fill(jet3_time_avg);
+     h1map["jet_t"]->Fill(jet4_time_avg);
 
   }// end loop over events
  
@@ -509,3 +553,17 @@ void run(TString file, TString out, TFile* fout){
   save2Dplots(out,fout,h2map);
 
 }// end run()
+
+float calcDeltaT(const float lx, const float bx, const float la, const float ba, const float lo, const float bo){
+  // change in distance
+  float dl = (float)lx/(float)bx + (float)la/(float)ba - (float)lo/(float)bo;
+  // convert to time by dividing by c (30cm/ns)
+  float dt = (float)dl/30.0; 
+  return dt;
+}// end calcDeltaT
+
+float calcAvgT(const float t, const int n){
+  float avgT = (float)t/(float)n;
+  return avgT;
+}// end calcAvgT
+

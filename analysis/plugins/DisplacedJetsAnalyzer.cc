@@ -443,10 +443,10 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       // now get interesting quarks' mother or gmother information
       std::vector< const reco::Candidate * > mother;
       mother.push_back(genpar_iter.mother(0));
+      nmothers = mother.size();
 
       // now look at mothers/grandmothers
       for (const auto & mom : mother ){
-        nmothers++;
         mx = mom->vx();
         my = mom->vy();
         mz = mom->vz();
