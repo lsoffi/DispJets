@@ -11,8 +11,9 @@ void save1Dplots( TString, TFile* , const TH1map & );
 void save2Dplots( TString, TFile* , const TH2map & );
 TH1F * MakeTH1FPlot( const TString, const TString, const int, const double, const double, const TString, const TString );
 TH2F * MakeTH2FPlot( const TString, const TString, const int, const double, const double, const int, const double, const double, const TString, const TString );
-float calcDeltaT(const float, const float, const float, const float, const float, const float);
-float calcAvgT(const float, const int);
+float calcDeltaT( const float, const float, const float, const float, const float, const float );
+float calcAvgT( const float, const int );
+float smearVal( const float ); 
 
 // ---------------------------------- 
 // ----------- START ----------------
@@ -36,20 +37,27 @@ void getTimingOfJet()
 
 void histos( TH1map & map , TH2map & map2){
 
-  map["LL_beta"]	= MakeTH1FPlot("LL_beta","",100,0,1,"LL particle #beta","");
-  map["LL_cTau"]	= MakeTH1FPlot("LL_cTau","",50,0,50,"LL particle c#tau [cm]","");
-  map["nconst"]		= MakeTH1FPlot("nconst","",50,0,50,"Num. jet constituents","");
-  map["const_t_ex"]	= MakeTH1FPlot("const_t_ex","",150,-5,10,"Jet constituent time [ns] Example","");
-  map["const_t"]	= MakeTH1FPlot("const_t","",150,-5,10,"Jet constituent time [ns]",""); 
-  map["const_id"]	= MakeTH1FPlot("const_id","",400,-200,200,"Jet constituent pdgId","");
-  map["const_pt"]	= MakeTH1FPlot("const_pt","",100,0,100,"Jet constituent p_T [GeV]","");
-  map["const_eta"]	= MakeTH1FPlot("const_eta","",40,0,2.0,"Jet constituent |#eta|","");
-  map["jet_t"]		= MakeTH1FPlot("jet_t","",150,-5,10,"Jet time [ns]",""); 
-  map["unmatch_t"]	= MakeTH1FPlot("unmatch_t","",150,-5,10,"Unmatched particle time [ns]","");
-  map["max_jet_t"]	= MakeTH1FPlot("max_jet_t","",150,-5,10,"Max jet time [ns]","");
+  // 1d histos
+  map["LL_beta"]		= MakeTH1FPlot("LL_beta","",100,0,1,"LL particle #beta","");
+  map["LL_cTau"]		= MakeTH1FPlot("LL_cTau","",50,0,50,"LL particle c#tau [cm]","");
+  map["nconst"]			= MakeTH1FPlot("nconst","",50,0,50,"Num. jet constituents","");
+  map["const_t_ex"]		= MakeTH1FPlot("const_t_ex","",150,-5,10,"Jet constituent time [ns] Example","");
+  map["const_t"]		= MakeTH1FPlot("const_t","",150,-5,10,"Jet constituent time [ns]",""); 
+  map["const_id"]		= MakeTH1FPlot("const_id","",400,-200,200,"Jet constituent pdgId","");
+  map["const_pt"]		= MakeTH1FPlot("const_pt","",100,0,100,"Jet constituent p_{T} [GeV]","");
+  map["const_eta"]		= MakeTH1FPlot("const_eta","",40,0,2.0,"Jet constituent |#eta|","");
+  map["max_jet_t"]		= MakeTH1FPlot("max_jet_t","",150,-5,10,"Max jet time [ns]","");
+  map["jet_t"]			= MakeTH1FPlot("jet_t","",150,-5,10,"Jet time [ns]",""); 
+  map["jet_t_smear30"]		= MakeTH1FPlot("jet_t_smear30","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_smear180"] 	= MakeTH1FPlot("jet_t_smear180","",150,-5,10,"Jet time [ns]","");
+  map["unmatch_t"]		= MakeTH1FPlot("unmatch_t","",150,-5,10,"Unmatched particle time [ns]","");
+  map["unmatch_beta"]		= MakeTH1FPlot("unmatch_beta","",100,0,1,"Unmatched particle #beta","");
+  map["unmatch_t_smear30"]	= MakeTH1FPlot("unmatch_t_smear30","",150,-5,10,"Unmatched particle time [ns]","");
+  map["unmatch_t_smear180"]	= MakeTH1FPlot("unmatch_t_smear180","",150,-5,10,"Unmatched particle time [ns]","");
 
-  map2["tX1_tX2"]	= MakeTH2FPlot("tX1_tX2","",150,-5,10,150,-5,10,"Time jets from X1 [ns]","Time jets from X2 [ns]");
-  map2["tnear_tfar"]	= MakeTH2FPlot("tnear_tfar","",150,-5,10,250,-5,20,"Time close jets [ns]","Time far jets [ns]");
+  // 2d histos
+  map2["tX1_tX2"]		= MakeTH2FPlot("tX1_tX2","",150,-5,10,150,-5,10,"Time jets from X1 [ns]","Time jets from X2 [ns]");
+  map2["tnear_tfar"]		= MakeTH2FPlot("tnear_tfar","",150,-5,10,250,-5,20,"Time close jets [ns]","Time far jets [ns]");
 
 }
 
@@ -92,6 +100,7 @@ void save1Dplots(TString odir, TFile* fout, const TH1map & map){
     c->cd();
     hist->Draw("HIST");
 
+    // specific instructions for certain histos
     if (name=="LL_cTau"){
       TF1* f = (TF1*)hist->GetFunction("expo");
       f->Draw("SAME");
@@ -204,6 +213,7 @@ void run(TString file, TString out, TFile* fout){
    vector<int>     *genpar_match_q4;
    vector<float>   *genpar_lo;
    vector<float>   *genpar_la;
+   vector<float>   *genpar_beta;
    Int_t           *nmothers;
    vector<int>     *mom_id;
    vector<int>     *mom_stat;
@@ -277,6 +287,7 @@ void run(TString file, TString out, TFile* fout){
    genpar_match_q4 = 0;
    genpar_lo = 0;
    genpar_la = 0;
+   genpar_beta = 0;
    mom_id = 0;
    mom_stat = 0;
    mom_e = 0;
@@ -356,6 +367,7 @@ void run(TString file, TString out, TFile* fout){
    TBranch        *b_genpar_match_q4;   //!
    TBranch        *b_genpar_lo;   //!
    TBranch        *b_genpar_la;   //!
+   TBranch        *b_genpar_beta;   //!
    TBranch        *b_nmothers;   //!
    TBranch        *b_mom_id;   //!
    TBranch        *b_mom_stat;   //!
@@ -436,6 +448,7 @@ void run(TString file, TString out, TFile* fout){
    t->SetBranchAddress("genpar_match_q4", &genpar_match_q4, &b_genpar_match_q4);
    t->SetBranchAddress("genpar_lo", &genpar_lo, &b_genpar_lo);
    t->SetBranchAddress("genpar_la", &genpar_la, &b_genpar_la);
+   t->SetBranchAddress("genpar_beta", &genpar_beta, &b_genpar_beta);
    t->SetBranchAddress("nmothers", &nmothers, &b_nmothers);
    t->SetBranchAddress("mom_id", &mom_id, &b_mom_id);
    t->SetBranchAddress("mom_stat", &mom_stat, &b_mom_stat);
@@ -460,9 +473,8 @@ void run(TString file, TString out, TFile* fout){
    TH1map h1map;
    TH2map h2map;
    histos(h1map, h2map);
-   
-   int good_ex = 0;
 
+   int good_ex = 0;
    // loop over events
    unsigned int nentries = t->GetEntries();
    for (unsigned int entry = 0; entry < nentries; entry++){
@@ -516,6 +528,17 @@ void run(TString file, TString out, TFile* fout){
      float jet4_nconst     = 0;
      float unmatch_dt      = 0;
 
+     float smear_value_30      = 0;
+     float smear_value_180     = 0;
+     float jet1_time_smear_30  = 0;
+     float jet2_time_smear_30  = 0;
+     float jet3_time_smear_30  = 0;
+     float jet4_time_smear_30  = 0;
+     float jet1_time_smear_180 = 0;
+     float jet2_time_smear_180 = 0;
+     float jet3_time_smear_180 = 0;
+     float jet4_time_smear_180 = 0;
+
      // loop over gen particles
 
      for (unsigned int gp = 0; gp < ngenpart; gp++){
@@ -524,6 +547,10 @@ void run(TString file, TString out, TFile* fout){
        if ( std::abs((*genpar_eta)[gp]) > 1.5 ) continue; // keep only particles in barrel 
        if ( (*genpar_pt)[gp] < 1.0 ) continue;            // keep only >1 GeV particles
 
+       // get random smear value
+       smear_value_30  = smearVal(0.03); // 30 ps -> 0.03 ns
+       smear_value_180 = smearVal(0.18); // 180 ps -> 0.18 ns
+   
        // check particle matches jet
        if ( (*genpar_match_q1)[gp]==1 || (*genpar_match_q2)[gp]==1 || (*genpar_match_q3)[gp]==1 || (*genpar_match_q4)[gp]==1 ){ 
          // constituent info
@@ -531,44 +558,52 @@ void run(TString file, TString out, TFile* fout){
          h1map["const_pt"]->Fill((*genpar_pt)[gp]);
          h1map["const_eta"]->Fill(std::abs((*genpar_eta)[gp]));
        }
-   
+  
        // constituent particle info
        jet_const_beta = 1.0;
        jet_const_lxyz = (*genpar_la)[gp];
        // hypothetical non-LL info
-       jet_orig_beta  = 1.0;
+       jet_orig_beta  = 1.0; // (*genpar_beta)[gp];
        jet_orig_lxyz  = (*genpar_lo)[gp];
 
        // --- q1 jet
        if ( (*genpar_match_q1)[gp]==1){
-         jet1_nconst  += 1.0; // counter for jet constituents
-         jet1_const_dt = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
-         jet1_time_raw += jet1_const_dt;
+         jet1_nconst         += 1.0; // counter for jet constituents
+         jet1_const_dt        = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+         jet1_time_raw       += jet1_const_dt;
+         jet1_time_smear_30  += jet1_const_dt*smear_value_30;
+         jet1_time_smear_180 += jet1_const_dt*smear_value_180;
          h1map["const_t"]->Fill(jet1_const_dt);
          if (good_ex==1) h1map["const_t_ex"]->Fill(jet1_const_dt);
        }// end match to q1 jet
 
        // --- q2 jet
        if ( (*genpar_match_q2)[gp]==1){
-         jet2_nconst  += 1.0; // counter for jet constituents
-         jet2_const_dt = calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
-         jet2_time_raw += jet2_const_dt;
+         jet2_nconst         += 1.0; // counter for jet constituents
+         jet2_const_dt        = calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+         jet2_time_raw       += jet2_const_dt;
+         jet2_time_smear_30  += jet2_const_dt*smear_value_30;
+         jet2_time_smear_180 += jet2_const_dt*smear_value_180;
          h1map["const_t"]->Fill(jet2_const_dt);
        }// end match to q2 jet
 
        // --- q3 jet
        if ( (*genpar_match_q3)[gp]==1){
-         jet3_nconst  += 1.0; // counter for jet constituents
-         jet3_const_dt = calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
-         jet3_time_raw += jet3_const_dt;
+         jet3_nconst         += 1.0; // counter for jet constituents
+         jet3_const_dt        = calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+         jet3_time_raw       += jet3_const_dt;
+         jet3_time_smear_30  += jet3_const_dt*smear_value_30;
+         jet3_time_smear_180 += jet3_const_dt*smear_value_180;
          h1map["const_t"]->Fill(jet3_const_dt);
        }// end match to q3 jet
 
        // --- q4 jet
        if ( (*genpar_match_q4)[gp]==1){
-         jet4_nconst  += 1.0; // counter for jet constituents
-         jet4_const_dt = calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); // constituent deltaT 
-         jet4_time_raw += jet4_const_dt;
+         jet4_nconst         += 1.0; // counter for jet constituents
+         jet4_const_dt        = calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+         jet4_time_raw       += jet4_const_dt;
+         jet4_time_smear_30  += jet4_const_dt*smear_value_30;
+         jet4_time_smear_180 += jet4_const_dt*smear_value_180;
          h1map["const_t"]->Fill(jet4_const_dt);
        }// end match to q4 jet
 
@@ -577,24 +612,41 @@ void run(TString file, TString out, TFile* fout){
        if ( (*genpar_match_q0)[gp]==0 ){
          unmatch_dt = calcDeltaT(0.0,1.0,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
          h1map["unmatch_t"]->Fill(unmatch_dt);
+         h1map["unmatch_t_smear30"]->Fill(unmatch_dt*smear_value_30);
+         h1map["unmatch_t_smear180"]->Fill(unmatch_dt*smear_value_180);
+         h1map["unmatch_beta"]->Fill((*genpar_beta)[gp]);
        }// end unmatched particles
 
      }// end loop over gen particles
 
+
+     // calculate jet time
      float jet1_time_avg = calcAvgT(jet1_time_raw,jet1_nconst);
      float jet2_time_avg = calcAvgT(jet2_time_raw,jet2_nconst);
      float jet3_time_avg = calcAvgT(jet3_time_raw,jet3_nconst);
      float jet4_time_avg = calcAvgT(jet4_time_raw,jet4_nconst);
-
+    
+     // # constituents
      if (jet1_nconst > 0) h1map["nconst"]->Fill(jet1_nconst);
      if (jet2_nconst > 0) h1map["nconst"]->Fill(jet2_nconst);
      if (jet3_nconst > 0) h1map["nconst"]->Fill(jet3_nconst);
      if (jet4_nconst > 0) h1map["nconst"]->Fill(jet4_nconst);
-      
+     
+     // fill jet time histos 
      if (jet1_nconst > 0) h1map["jet_t"]->Fill(jet1_time_avg);
      if (jet2_nconst > 0) h1map["jet_t"]->Fill(jet2_time_avg);
      if (jet3_nconst > 0) h1map["jet_t"]->Fill(jet3_time_avg);
      if (jet4_nconst > 0) h1map["jet_t"]->Fill(jet4_time_avg);
+     // smeared 30ns histos
+     if (jet1_nconst > 0) h1map["jet_t_smear30"]->Fill(calcAvgT(jet1_time_smear_30,jet1_nconst));
+     if (jet2_nconst > 0) h1map["jet_t_smear30"]->Fill(calcAvgT(jet2_time_smear_30,jet2_nconst));
+     if (jet3_nconst > 0) h1map["jet_t_smear30"]->Fill(calcAvgT(jet3_time_smear_30,jet3_nconst));
+     if (jet4_nconst > 0) h1map["jet_t_smear30"]->Fill(calcAvgT(jet4_time_smear_30,jet4_nconst));
+     // smeared 180ns histos
+     if (jet1_nconst > 0) h1map["jet_t_smear180"]->Fill(calcAvgT(jet1_time_smear_180,jet1_nconst));
+     if (jet2_nconst > 0) h1map["jet_t_smear180"]->Fill(calcAvgT(jet2_time_smear_180,jet2_nconst));
+     if (jet3_nconst > 0) h1map["jet_t_smear180"]->Fill(calcAvgT(jet3_time_smear_180,jet3_nconst));
+     if (jet4_nconst > 0) h1map["jet_t_smear180"]->Fill(calcAvgT(jet4_time_smear_180,jet4_nconst));
 
      float max_12 = std::max(jet1_time_avg,jet2_time_avg);
      float max_34 = std::max(jet3_time_avg,jet4_time_avg);
@@ -632,4 +684,10 @@ float calcAvgT(const float t, const int n){
   if (n!=0) avgT = (float)t/(float)n;
   return avgT;
 }// end calcAvgT
+
+float smearVal(const float res){
+  TRandom3 * r = new TRandom3(0);
+  float val = r->Gaus(1,res);
+  return val;
+}
 
