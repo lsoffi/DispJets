@@ -31,6 +31,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/Common/interface/Handle.h"
 // specific
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
@@ -46,9 +48,10 @@
 struct tree_struc_{
 
   int				sample;
-  long unsigned int		event;
   int				run;
   int				lumi;
+  long unsigned int		event;
+  float				weight;
   int				ngenjets;
   std::vector<float>            genjet_pt;
   std::vector<float>            genjet_e;
@@ -154,8 +157,10 @@ class DisplacedJetsAnalyzer : public edm::EDAnalyzer {
       int	sampleID_;
 
       // tokens
+      edm::EDGetTokenT<GenEventInfoProduct>			genInfoToken_;
       edm::EDGetTokenT<std::vector<reco::GenJet> >		genjetToken_;
       edm::EDGetTokenT<std::vector<reco::GenParticle> >		genparticleToken_;
+      edm::EDGetTokenT<edm::View<PileupSummaryInfo> >		pileupToken_;
       edm::EDGetTokenT<std::vector<SimVertex> >			verticesToken_;
 
       // setup tree;
@@ -174,10 +179,13 @@ const auto pTsort = [](const auto& obj1, const auto& obj2){ return obj1->pt() > 
 DisplacedJetsAnalyzer::DisplacedJetsAnalyzer(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
+
    verbose_		= iConfig.getUntrackedParameter<bool>("verbose");
    sampleID_		= iConfig.getUntrackedParameter<int>("sampleID",0);
+   genInfoToken_	= consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("generatorInfo"));
    genjetToken_		= consumes<std::vector<reco::GenJet> >(iConfig.getUntrackedParameter<edm::InputTag>("genjets"));
    genparticleToken_    = consumes<std::vector<reco::GenParticle> >(iConfig.getUntrackedParameter<edm::InputTag>("genparticles"));
+   pileupToken_		= consumes<edm::View<PileupSummaryInfo> >(iConfig.getUntrackedParameter<edm::InputTag>("pileupInfo"));
    verticesToken_	= consumes<std::vector<SimVertex> >(iConfig.getUntrackedParameter<edm::InputTag>("vertices"));
 
 }
@@ -203,21 +211,32 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   using namespace edm;
 
   // --- pick up handles 
+  edm::Handle<GenEventInfoProduct> genInfo;
+  iEvent.getByToken(genInfoToken_, genInfo);  
+ 
   edm::Handle<std::vector<reco::GenJet> > genjets;
   iEvent.getByToken(genjetToken_, genjets);
 
   edm::Handle<std::vector<reco::GenParticle> > genparticles;
   iEvent.getByToken(genparticleToken_, genparticles);
 
+  edm::Handle<edm::View<PileupSummaryInfo> > pileupInfo;
+  iEvent.getByToken(pileupToken_, pileupInfo);
+
   edm::Handle<std::vector<SimVertex> > vertices;
   iEvent.getByToken(verticesToken_, vertices);
 
   // --- general event info 
   unsigned long int event = iEvent.id().event();   
-  int run   = iEvent.id().run();
-  int lumi  = iEvent.luminosityBlock();
-  //int nvtx  = vertices->size();
-  //std::cout << "nvtx " << nvtx << std::endl;
+  int run                 = iEvent.id().run();
+  int lumi                = iEvent.luminosityBlock();
+  float weight            = genInfo->weights()[0]; 
+
+  //int nvtx                = -1;   // samples not generated with PU
+  //for (unsigned int PV = 0; PV < pileupInfo->size(); ++PV){
+  //  int BX = pileupInfo->ptrAt(PV)->getBunchCrossing();
+  //  if (BX == 0) nvtx = pileupInfo->ptrAt(PV)->getTrueNumInteractions();
+  //}
 
   // --- genjet info
   int ngenjets = 0;
@@ -635,6 +654,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   tree_.run		= run;
   tree_.lumi		= lumi;
   tree_.event		= event;
+  tree_.weight		= weight;
   tree_.ngenjets	= ngenjets;
   tree_.ngenpart        = ngenpart;
   tree_.nmothers	= nmothers;
@@ -768,6 +788,7 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("run",			&tree_.run,			"run/I");
   tree->Branch("lumi",			&tree_.lumi,			"lumi/I");
   tree->Branch("event",			&tree_.event,			"event/L");
+  tree->Branch("weight",		&tree_.weight,			"weight/F");
 
   // gen jet stuff
   tree->Branch("ngenjets",		&tree_.ngenjets,		"ngenjets/I");
@@ -876,6 +897,7 @@ void DisplacedJetsAnalyzer::initTreeStructure()
   tree_.run		= -500.;
   tree_.lumi		= -500.;
   tree_.event		= 0.;
+  tree_.weight		= 0.;
   tree_.ngenjets	= -500.;
   tree_.ngenpart	= -500.;
   tree_.nmothers	= -500.;

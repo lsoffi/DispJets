@@ -22,7 +22,7 @@ void getTimingOfJet()
 {
 
   TString path = "../";
-  TString out  = "~/www/Plots/DispJets/GenLevelPlots/Timing/";
+  TString out  = "~/www/Plots/DispJets/GenLevelPlots/TimingAnalysis/";
   std::vector< TString > file;
   file.push_back(Form("%sntuple_dispjets.root",path.Data()));
   int nsamples = file.size();
@@ -50,10 +50,14 @@ void histos( TH1map & map , TH2map & map2){
   map["jet_t"]			= MakeTH1FPlot("jet_t","",150,-5,10,"Jet time [ns]",""); 
   map["jet_t_smear30"]		= MakeTH1FPlot("jet_t_smear30","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear180"] 	= MakeTH1FPlot("jet_t_smear180","",150,-5,10,"Jet time [ns]","");
+  map["jet_d1"]			= MakeTH1FPlot("jet_d1","",50,0,1,"Jet D1","");
+  map["jet_d2"]			= MakeTH1FPlot("jet_d2","",50,0,1,"Jet D2","");
   map["unmatch_t"]		= MakeTH1FPlot("unmatch_t","",150,-5,10,"Unmatched particle time [ns]","");
   map["unmatch_beta"]		= MakeTH1FPlot("unmatch_beta","",100,0,1,"Unmatched particle #beta","");
   map["unmatch_t_smear30"]	= MakeTH1FPlot("unmatch_t_smear30","",150,-5,10,"Unmatched particle time [ns]","");
   map["unmatch_t_smear180"]	= MakeTH1FPlot("unmatch_t_smear180","",150,-5,10,"Unmatched particle time [ns]","");
+  map["unmatch_d1"]		= MakeTH1FPlot("unmatch_d1","",50,0,1,"Unmatched particle D1","");
+  map["unmatch_d2"]		= MakeTH1FPlot("unmatch_d2","",50,0,1,"Unmatched particle D2","");
 
   // 2d histos
   map2["tX1_tX2"]		= MakeTH2FPlot("tX1_tX2","",150,-5,10,150,-5,10,"Time jets from X1 [ns]","Time jets from X2 [ns]");
@@ -96,7 +100,7 @@ void save1Dplots(TString odir, TFile* fout, const TH1map & map){
     hist->Write(hist->GetName(),TObject::kWriteDelete);
 
     // draw to canvas
-    TCanvas *c = new TCanvas("c","c");
+    TCanvas *c = new TCanvas("c","c",600,800);
     c->cd();
     hist->Draw("HIST");
 
@@ -158,6 +162,7 @@ void run(TString file, TString out, TFile* fout){
    Int_t           run;
    Int_t           lumi;
    Long64_t        event;
+   Float_t         weight;
    Int_t           ngenjets;
    vector<float>   *genjet_pt;
    vector<float>   *genjet_e;
@@ -312,6 +317,7 @@ void run(TString file, TString out, TFile* fout){
    TBranch        *b_run;   //!
    TBranch        *b_lumi;   //!
    TBranch        *b_event;   //!
+   TBranch        *b_weight;   //!
    TBranch        *b_ngenjets;   //!
    TBranch        *b_genjet_pt;   //!
    TBranch        *b_genjet_e;   //!
@@ -393,6 +399,7 @@ void run(TString file, TString out, TFile* fout){
    t->SetBranchAddress("run", &run, &b_run);
    t->SetBranchAddress("lumi", &lumi, &b_lumi);
    t->SetBranchAddress("event", &event, &b_event);
+   t->SetBranchAddress("weight", &weight, &b_weight);
    t->SetBranchAddress("ngenjets", &ngenjets, &b_ngenjets);
    t->SetBranchAddress("genjet_pt", &genjet_pt, &b_genjet_pt);
    t->SetBranchAddress("genjet_e", &genjet_e, &b_genjet_e);
@@ -672,10 +679,8 @@ void run(TString file, TString out, TFile* fout){
 }// end run()
 
 float calcDeltaT(const float lx, const float bx, const float la, const float ba, const float lo, const float bo){
-  // change in distance
-  float dl = (float)lx/(float)bx + (float)la/(float)ba - (float)lo/(float)bo;
-  // convert to time by dividing by c (30cm/ns)
-  float dt = (float)dl/30.0; 
+  float dl = (float)lx/(float)bx + (float)la/(float)ba - (float)lo/(float)bo; // change in distance
+  float dt = (float)dl/30.0; // convert to time by dividing by c (30cm/ns)
   return dt;
 }// end calcDeltaT
 

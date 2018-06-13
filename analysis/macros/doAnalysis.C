@@ -9,7 +9,7 @@ void doAnalysis()
 {
 
   TString path = "../";
-  TString out  = "~/www/Plots/DispJets/GenLevelPlots/TimingAnalysis/";
+  TString out  = "output_files/";
   vector<TString> s_file;
   s_file.push_back("XXto4Q_M100_CT100mm");
   int nSig = s_file.size();
@@ -26,7 +26,7 @@ void doAnalysis()
   TString cut2 = Form("(jet_pt[1] > %s && jet_smear_%s_t[1] > %s)",ptcut.Data(),res.Data(),tcut.Data());
   TString cut3 = Form("(jet_pt[2] > %s && jet_smear_%s_t[2] > %s)",ptcut.Data(),res.Data(),tcut.Data());
   TString cut4 = Form("(jet_pt[3] > %s && jet_smear_%s_t[3] > %s)",ptcut.Data(),res.Data(),tcut.Data());
-  TString cut  = Form("(%s || %s || %s || %s)",cut1.Data(),cut2.Data(),cut3.Data(),cut4.Data());
+  TString cut  = Form("weight*(%s || %s || %s || %s)",cut1.Data(),cut2.Data(),cut3.Data(),cut4.Data());
 
   // get number of events above cut
   map<TString, float> vals;
@@ -86,13 +86,13 @@ void makeCard(TString dir, TString sig, vector<TString> bkgs, map<TString,float>
     card << "bin 1" << endl;
     card << "observation 0" << endl;
     card << "------------------------------------" << endl;
-    card << "bin	1	1" << endl;
-    card << "process	sig	bkg" << endl;
-    card << Form("rate	%0.3f	%0.3f",vals[sig],vals["bkg"]) << endl;
+    card << "bin      	1		1" << endl;
+    card << "process 	sig		bkg" << endl;
+    card << Form("rate     	%0.3f		%0.3f",vals[sig],vals["bkg"]) << endl;
     card << "------------------------------------" << endl;
-    card << "lumi	1.03	1.03" << endl;
-    card << "trig_eff	1.50	1.50" << endl;
-    card << "sel_eff	1.30	1.30" << endl;
+    card << "lumi     	1.03		1.03" << endl;
+    card << "trig_eff 	1.50		1.50" << endl;
+    card << "sel_eff  	1.30		1.30" << endl;
 
   }// end if card is open
   else std::cout << "Unable to open output datacard file" << std::endl;
