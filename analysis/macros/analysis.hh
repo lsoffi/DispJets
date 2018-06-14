@@ -14,7 +14,7 @@
 class analysis
 {
 public:
-  analysis();
+  analysis(TString indir, TString outdir, TString t_cut, TString t_res, float setlumi);
   ~analysis();
   void  run();
   float applySel(TString file);

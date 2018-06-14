@@ -1,16 +1,15 @@
 #include "analysis.hh"
 
-analysis::analysis()
+analysis::analysis(TString indir, TString outdir, TString t_cut, TString t_res, float setlumi)
 {
 
   // initialize constants
-  inpath        = "../";           // input dir 
-  outpath       = "output_files/"; // output dir
-  res           = "30";  // resolution in ps
-  tcut          = "1.0"; // jet time cut in ns
-  ptcut         = "30";  // jet pt cut in GeV
-  float setlumi = 2.6;   // lumi in fb^-1
-  lumi = setlumi*1000;   // translate lumi to pb^-1
+  inpath        = indir;        // input dir 
+  outpath       = outdir;       // output dir
+  res           = t_res;        // resolution in ps
+  tcut          = t_cut;        // jet time cut in ns
+  ptcut         = "30";         // jet pt cut in GeV
+  lumi          = setlumi*1000; // translate lumi to pb^-1
 
   // set up cut string
   TString cut1 = Form("(jet_pt[0] > %s && jet_smear_%s_t[0] > %s)",ptcut.Data(),res.Data(),tcut.Data());
@@ -76,7 +75,7 @@ float analysis::applySel(TString file)
   TTree *t = (TTree*)f->Get("dispjets/tree");
   if (t == NULL){ std::cout << "Tree not found" << std::endl; return -1; }
   
-  // get total number 
+  // get total number (denominator) 
   float weight;
   TBranch *b_weight;
   t->SetBranchAddress("weight", &weight, &b_weight);
@@ -88,19 +87,22 @@ float analysis::applySel(TString file)
 
   // apply cut
   TH1F * h = new TH1F("h","",150,-5,10);
-  t->Draw(Form("jet_smear_%s_t >> h",res.Data()),Form("%s",cut.Data()));
+  if (res=="0") t->Draw("jet_avg_t >> h",Form("%s",cut.Data()));
+  else          t->Draw(Form("jet_smear_%s_t >> h",res.Data()),Form("%s",cut.Data()));
 
-  fout->cd();
   // save output histo
+  fout->cd();
   h->Draw("HIST");
   h->Write();
-  
+ 
+  // get number after cuts (numerator) 
   float int_aftercuts = h->Integral();
-
-  delete h;
-
+  // calculate efficiency
   float eff = 0;
   if (sum_weight > 0 ) eff = int_aftercuts/sum_weight;
+
+  // delete and finish
+  delete h;
   return eff;
 
 }// end applySel
@@ -108,8 +110,6 @@ float analysis::applySel(TString file)
 float analysis::applyNorm(float eff, float xsec)
 {
   float numexp = lumi*eff*xsec;
-  //std::cout << "Inputs  : " << eff << " " << xsec << " " << lumi << std::endl;
-  //std::cout << "#Events : " << numexp << std::endl; 
   return numexp;
 }// end applyNorm
 
@@ -117,7 +117,7 @@ void analysis::makeCard(TString sig)
 {
 
   // setup card
-  TString cardname = Form("%sdatacard_%s.txt",outpath.Data(),sig.Data());
+  TString cardname = Form("%sdatacard_%s_res%s_lumi%0.0fpb.txt",outpath.Data(),sig.Data(),res.Data(),lumi);
   std::cout << "Writing card " << cardname << std::endl;
   std::ofstream card;
   card.open(cardname); 
