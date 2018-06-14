@@ -1,7 +1,7 @@
 #include "TString.h"
 #include "analysis.cpp+"
 
-void runAnalysis()
+void Analysis()
 {
   analysis ana; 
   ana.run();

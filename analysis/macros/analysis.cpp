@@ -3,7 +3,9 @@
 analysis::analysis()
 {
 
-  // initialize const
+  // initialize constants
+  inpath        = "../";           // input dir 
+  outpath       = "output_files/"; // output dir
   res           = "30";  // resolution in ps
   tcut          = "1.0"; // jet time cut in ns
   ptcut         = "30";  // jet pt cut in GeV
@@ -16,12 +18,21 @@ analysis::analysis()
   TString cut3 = Form("(jet_pt[2] > %s && jet_smear_%s_t[2] > %s)",ptcut.Data(),res.Data(),tcut.Data());
   TString cut4 = Form("(jet_pt[3] > %s && jet_smear_%s_t[3] > %s)",ptcut.Data(),res.Data(),tcut.Data());
   cut  = Form("weight*(%s || %s || %s || %s)",cut1.Data(),cut2.Data(),cut3.Data(),cut4.Data());
+
+  // input names
+  s_file.push_back("XXto4Q_M100_CT100mm");
+  //b_file.push_back("QCD");
+  nSig = s_file.size();
+  nBkg = b_file.size();
+
+  // setup xsec values
+  for (int f = 0; f < nSig; f++){
+    xsec[s_file[f]] = 1.0; // signal xsec = 1pb
+  }
+  xsec["QCD"] = 10000; 
  
   // output files
-  TString path = "../";
-  TString out  = "output_files/";
-  fout = TFile::Open(Form("%sdispjets.root",out.Data()),"RECREATE");
- 
+  fout = TFile::Open(Form("%sdispjets.root",outpath.Data()),"RECREATE");
 
 }// end analysis
 
@@ -35,14 +46,61 @@ analysis::~analysis()
 void analysis::run()
 {
 
+  // get number of events above cut
+  for (int f = 0; f < nSig; f++){
+    vals[s_file[f]] = applySel(s_file[f]);
+    vals[s_file[f]] = applyNorm(vals[s_file[f]],xsec[s_file[f]]);
+  }
+  float sum_bkg_val = 0; 
+  for (int f = 0; f < nBkg; f++){
+    vals[b_file[f]] = applySel(b_file[f]);
+    vals[b_file[f]] = applyNorm(vals[b_file[f]],xsec[b_file[f]]);
+    sum_bkg_val += vals[b_file[f]];
+  }
+  vals["bkg"] = sum_bkg_val;
+
+  // write out datacard
+  for (int f = 0; f < nSig; f++){
+    makeCard(s_file[f]);
+  }
+
 }// end run
 
-float analysis::applySel(TString path, TString file)
+float analysis::applySel(TString file)
 {
   
-  std::cout << " here " << std::endl;
+  // input file
+  TFile *f = TFile::Open(Form("%sntuples_%s_skim.root",inpath.Data(),file.Data()),"READ");
+  if (f == NULL){ std::cout << "File not found: " << inpath << file << std::endl; return -1; }
+  // input tree
+  TTree *t = (TTree*)f->Get("dispjets/tree");
+  if (t == NULL){ std::cout << "Tree not found" << std::endl; return -1; }
+  
+  // get total number 
+  float weight;
+  TBranch *b_weight;
+  t->SetBranchAddress("weight", &weight, &b_weight);
+  float sum_weight = 0;
+  for (unsigned int entry = 0; entry < t->GetEntries(); entry++){
+    t->GetEntry(entry);
+    sum_weight += weight;
+  }
+
+  // apply cut
+  TH1F * h = new TH1F("h","",150,-5,10);
+  t->Draw(Form("jet_smear_%s_t >> h",res.Data()),Form("%s",cut.Data()));
+
+  fout->cd();
+  // save output histo
+  h->Draw("HIST");
+  h->Write();
+  
+  float int_aftercuts = h->Integral();
+
   float eff = 0;
+  if (sum_weight > 0 ) eff = int_aftercuts/sum_weight;
   return eff;
+
 
 }// end applySel
 
@@ -54,11 +112,11 @@ float analysis::applyNorm(float eff, float xsec)
   return numexp;
 }// end applyNorm
 
-void analysis::makeCard(TString dir, TString sig, std::vector<TString> bkgs, std::map<TString,float> vals)
+void analysis::makeCard(TString sig)
 {
 
   // setup card
-  TString cardname = Form("%sdatacard_%s.txt",dir.Data(),sig.Data());
+  TString cardname = Form("%sdatacard_%s.txt",outpath.Data(),sig.Data());
   std::cout << "Writing card " << cardname << std::endl;
   std::ofstream card;
   card.open(cardname); 

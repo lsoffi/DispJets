@@ -1,7 +1,7 @@
 #! /bin/sh
 
 echo "Running analysis"
-root -l -b -q "Analysis.C()"
+root -l -b -q "Analysis.C"
 echo "Done"
 
 echo "Cleaning"

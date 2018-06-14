@@ -17,18 +17,27 @@ public:
   analysis();
   ~analysis();
   void  run();
+  float applySel(TString file);
   float applyNorm(float eff, float xsec);
-  float applySel(TString path, TString file);
-  void  makeCard(TString dir, TString sig, vector<TString> bkgs, map<TString,float> vals); 
+  void  makeCard(TString sig); 
 
 private:
-  TString res;
-  TString tcut;
-  TString ptcut;
-  float   lumi;
-  TString cut;
+  TString 		res;
+  TString 		tcut;
+  TString 		ptcut;
+  float   		lumi;
+  TString 		cut;
 
-  TFile * fout;
+  TString 		inpath;
+  map<TString,float>	xsec;
+  map<TString,float>	vals;
+  std::vector<TString>	s_file;
+  std::vector<TString>	b_file;
+  int			nSig; 
+  int			nBkg;
+  TString 		outpath;
+  TFile * 		fout;
+  
 
 };
 
