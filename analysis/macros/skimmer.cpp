@@ -1,35 +1,45 @@
-#include <iostream>
+#include "skimmer.hh"
 
-using namespace std;
-
-float calcDeltaT( const float, const float, const float, const float, const float, const float );
-float calcAvgT( const float, const int );
-float smearVal( const float );
-
-//---------------------------------------------------
-// Start
-//---------------------------------------------------
-void doSkimAndPrep(TString path, TString sample)
+skimmer::skimmer(TString path, TString sample)
 {
 
-  // input file and tree
-  cout << "Running sample: " << sample << std::endl;
-  TFile *infile = TFile::Open(Form("%s%s.root",path.Data(),sample.Data()));
-  if (!infile){
-    cout << "Sample " << sample << " does not exist! Exiting... " << endl;
-    return;
-  }
-  TTree * intree = (TTree*)infile->Get("dispjets/tree");
-  if (!intree){
-    cout << "Tree does not exist! Exiting... " << endl;
-    return;
-  }
+  // input file
+  std::cout << "Running sample: " << sample << std::endl;
+  infile = TFile::Open(Form("%s%s.root",path.Data(),sample.Data()));
+  if (!infile){ std::cout << "Sample " << sample << " does not exist! Exiting... " << std::endl; return; }
 
-  // setup output file and tree
-  TFile *outfile  = new TFile(Form("%s%s_skim.root",path.Data(),sample.Data()),"RECREATE");
-  TDirectory *outdir = outfile->mkdir("dispjets"); outdir->cd(); 
-  TTree *outtree = (TTree*)infile->Get("dispjets/tree");
+  // input tree
+  intree = (TTree*)infile->Get("dispjets/tree");
+  if (!intree){ std::cout << "Tree does not exist! Exiting... " << std::endl; return; }
+
+  // output file
+  outfile = TFile::Open(Form("%s%s_skim.root",path.Data(),sample.Data()),"RECREATE");
+
+  // output tree
+  outdir  = outfile->mkdir("dispjets"); outdir->cd(); 
+  outtree = (TTree*)infile->Get("dispjets/tree");
   outtree = intree->CloneTree(0); // clone original tree
+
+}// end skimmer
+
+skimmer::~skimmer()
+{
+
+  // save and delete
+  std::cout << "Finishing up" << std::endl;
+  outfile->cd();
+  outdir->cd();
+  outtree->Write();
+  delete intree;
+  delete infile;
+  delete outtree;
+  delete outfile; 
+
+}// end ~skimmer
+
+
+void skimmer::run()
+{
 
   // variables needed to do cuts
   int		ngenpart;					TBranch *b_ngenpart;
@@ -88,11 +98,6 @@ void doSkimAndPrep(TString path, TString sample)
     vector<float> tmp_jet_avg_t;	
     vector<float> tmp_jet_smear_30_t;	
     vector<float> tmp_jet_smear_180_t;
-    tmp_jet_nconst.clear();
-    tmp_jet_pt.clear();
-    tmp_jet_avg_t.clear();
-    tmp_jet_smear_30_t.clear();
-    tmp_jet_smear_180_t.clear();
 
     int   jet1_nconst         = 0;
     float jet1_pt             = 0;
@@ -119,23 +124,31 @@ void doSkimAndPrep(TString path, TString sample)
     float jet4_time_smear_30  = 0; 
     float jet4_time_smear_180 = 0;
 
-    // loop over gen particles
-    for (unsigned int gp = 0; gp < ngenpart; gp++){
-  
-      float smear_value_30  = smearVal(0.03); // res: 30 ps -> 0.03 ns
-      float smear_value_180 = smearVal(0.18); // res: 180 ps -> 0.18 ns
+    float smear_value_30      = 0; 
+    float smear_value_180     = 0;
+    float jet_const_beta      = 0; 
+    float jet_const_lxyz      = 0;
+    float jet_orig_beta       = 0; 
+    float jet_orig_lxyz       = 0;  
  
-      // constituent particle info 
-      float jet_const_beta = 1.0;
-      float jet_const_lxyz = (*genpar_la)[gp];
-      // hypothetical non-LL info
-      float jet_orig_beta  = 1.0; // (*genpar_beta)[gp]
-      float jet_orig_lxyz  = (*genpar_lo)[gp];    
-      
+
+    // loop over gen particles
+    for (int gp = 0; gp < ngenpart; gp++){
+
       if ((*genpar_stat)[gp] != 1)            continue;
       if (std::fabs((*genpar_eta)[gp]) > 1.5) continue;
       if ((*genpar_pt)[gp] < 1.0)             continue;
-
+  
+      smear_value_30  = smearVal(0.03); // res: 30 ps -> 0.03 ns
+      smear_value_180 = smearVal(0.18); // res: 180 ps -> 0.18 ns
+ 
+      // constituent particle info 
+      jet_const_beta = 1.0;
+      jet_const_lxyz = (*genpar_la)[gp];
+      // hypothetical non-LL info
+      jet_orig_beta  = 1.0; // (*genpar_beta)[gp]
+      jet_orig_lxyz  = (*genpar_lo)[gp];    
+      
       //--- q1 jet
       if ( (*genpar_match_q1)[gp]==1 ){
         jet1_const_dt        = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
@@ -224,32 +237,24 @@ void doSkimAndPrep(TString path, TString sample)
 
   }// end loop over events
 
-  // save and delete
-  outfile->cd();
-  outdir->cd();
-  outtree->Write();
-  delete intree;
-  delete infile;
-  delete outtree;
-  delete outfile; 
-
-}// end doSkimAndPrep
+}// end run
 
 
-float calcDeltaT(const float lx, const float bx, const float la, const float ba, const float lo, const float bo){
+float skimmer::calcDeltaT(const float lx, const float bx, const float la, const float ba, const float lo, const float bo){
   float dl = (float)lx/(float)bx + (float)la/(float)ba - (float)lo/(float)bo; // change in distance
   float dt = (float)dl/30.0; // convert to time by dividing by c (30cm/ns) 
   return dt; 
 }// end calcDeltaT
 
-float calcAvgT(const float t, const int n){ 
+float skimmer::calcAvgT(const float t, const int n){ 
   float avgT = -1000;
   if (n!=0) avgT = (float)t/(float)n;
   return avgT;
 }// end calcAvgT
 
-float smearVal(const float res){
+float skimmer::smearVal(const float res){
   TRandom3 * r = new TRandom3(0);
   float val = r->Gaus(1,res);
   return val;
 }// end smearVal
+
