@@ -255,6 +255,7 @@ float skimmer::calcAvgT(const float t, const int n){
 float skimmer::smearVal(const float res){
   TRandom3 * r = new TRandom3(0);
   float val = r->Gaus(1,res);
+  delete r;
   return val;
 }// end smearVal
 

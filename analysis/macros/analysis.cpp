@@ -97,10 +97,11 @@ float analysis::applySel(TString file)
   
   float int_aftercuts = h->Integral();
 
+  delete h;
+
   float eff = 0;
   if (sum_weight > 0 ) eff = int_aftercuts/sum_weight;
   return eff;
-
 
 }// end applySel
 
