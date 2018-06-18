@@ -26,7 +26,7 @@ analysis::analysis(TString indir, TString outdir, TString t_cut, TString t_res, 
 
   // setup xsec values
   for (int f = 0; f < nSig; f++){
-    xsec[s_file[f]] = 1.0; // signal xsec = 1pb
+    xsec[s_file[f]] = 0.1994; // signal xsec = 1pb
   }
   xsec["QCD"] = 10000; 
  
@@ -131,13 +131,14 @@ void analysis::makeCard(TString sig)
     card << "bin 1" << endl;
     card << "observation 0" << endl;
     card << "------------------------------------" << endl;
-    card << "bin      	1		1" << endl;
-    card << "process 	sig		bkg" << endl;
+    card << "bin      	1		1"    << endl;
+    card << "process 	sig		bkg"  << endl;
+    card << "process	0		1"    << endl;
     card << Form("rate     	%0.3f		%0.3f",vals[sig],vals["bkg"]) << endl;
     card << "------------------------------------" << endl;
-    card << "lumi     	1.03		1.03" << endl;
-    card << "trig_eff 	1.50		1.50" << endl;
-    card << "sel_eff  	1.30		1.30" << endl;
+    card << "lumi     lnN 	1.03		1.03" << endl;
+    card << "trig_eff lnN 	1.50		1.50" << endl;
+    card << "sel_eff  lnN 	1.30		1.30" << endl;
 
   }// end if card is open
   else std::cout << "Unable to open output datacard file" << std::endl;
