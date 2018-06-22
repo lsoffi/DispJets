@@ -107,7 +107,10 @@ struct tree_struc_{
   std::vector<float>		genpar_Lxyz;
   std::vector<float>		genpar_la;
   std::vector<float>		genpar_lo;
+  std::vector<float>		genpar_laline;
+  std::vector<float>		genpar_loline;
   std::vector<float>		genpar_beta;
+  std::vector<float>		genpar_q;
   int				nmothers;
   std::vector<int>		mom_id;
   std::vector<int>		mom_stat;
@@ -147,7 +150,8 @@ class DisplacedJetsAnalyzer : public edm::EDAnalyzer {
       virtual void endJob() override;
       void initTreeStructure();
       void clearVectors(); 
-      void getXYZ(float r, float theta, float phi, float & x, float & y, float & z);
+      float getXYZ(float r, float Q, float x0, float y0, float z0, float px0, float py0, float pz0, float & x, float &y, float &z);
+      float getLtrue(float s, float z);
       float getL(float x, float y, float z);
 
       // ----------member data ---------------------------
@@ -293,7 +297,10 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<float>	genpar_Lxyz;
   std::vector<float>	genpar_la;
   std::vector<float>	genpar_lo;
+  std::vector<float>	genpar_laline;
+  std::vector<float>	genpar_loline;
   std::vector<float>	genpar_beta;
+  std::vector<float>	genpar_q;
   int nmothers = 0;
   std::vector<int>	mom_id;
   std::vector<int>	mom_stat;
@@ -634,12 +641,21 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       match_q4.push_back(match4);
 
       // calculating timing delay
-      getXYZ(116.10,genpar_iter.theta(),genpar_iter.phi(),xT,yT,zT); // find xyz coord of pt on timing layer
-      float lo = getL(xT-q1_mx,yT-q1_my,zT-q1_mz); // distance from PV to point on timing layer
-      float lT  = getL(xT-vx,yT-vy,zT-vz);         // distance from SV to point on timing layer
+      float px0 = genpar_iter.px();
+      float py0 = genpar_iter.py();
+      float pz0 = genpar_iter.pz();
+      float q   = genpar_iter.charge();
+      float s = getXYZ(116.10,q,vx,vy,vz,px0,py0,pz0,xT,yT,zT); // find arclength & xyz coord of point on timing layer
+      float loline = getL(xT-q1_mx,yT-q1_my,zT-q1_mz);          // distance from PV to point on timing layer
+      float lTline = getL(xT-vx,yT-vy,zT-vz);                   // distance from SV to point on timing layer
+      float lo = getLtrue(s,zT-q1_mz);                          // distance from PV to point on timing layer
+      float lT = getLtrue(s,zT-vz);                             // distance from SV to point on timing layer
       genpar_lo.push_back(lo);
       genpar_la.push_back(lT);
+      genpar_loline.push_back(loline);
+      genpar_laline.push_back(lTline);
       genpar_beta.push_back(genpar_iter.p()/genpar_iter.energy());
+      genpar_q.push_back(q);
  
     }// end loop over genparticles
   }// end if genparticles.isValid
@@ -742,7 +758,10 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genpar_match_q4.push_back(match_q4[ip]);
     tree_.genpar_la.push_back(genpar_la[ip]);
     tree_.genpar_lo.push_back(genpar_lo[ip]);
+    tree_.genpar_laline.push_back(genpar_laline[ip]);
+    tree_.genpar_loline.push_back(genpar_loline[ip]);
     tree_.genpar_beta.push_back(genpar_beta[ip]);
+    tree_.genpar_q.push_back(genpar_q[ip]);
   }
 
   // save mom info for the 4 quarks of interest
@@ -850,7 +869,10 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("genpar_match_q4",	&tree_.genpar_match_q4);
   tree->Branch("genpar_lo",		&tree_.genpar_lo);
   tree->Branch("genpar_la",		&tree_.genpar_la);
+  tree->Branch("genpar_loline",		&tree_.genpar_loline);
+  tree->Branch("genpar_laline",		&tree_.genpar_laline);
   tree->Branch("genpar_beta",		&tree_.genpar_beta);
+  tree->Branch("genpar_q",		&tree_.genpar_q);
 
   // gen particle mom stuff
   tree->Branch("nmothers",		&tree_.nmothers,		"nmothers/I");
@@ -874,17 +896,44 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("mom_dupl",		&tree_.mom_dupl);
 }
 //---------------------------------------------------------------------------------------------------
-void DisplacedJetsAnalyzer::getXYZ(float r, float theta, float phi, float & x, float & y, float & z)
+float DisplacedJetsAnalyzer::getXYZ(float r, float Q, float x0, float y0, float z0, float px0, float py0, float pz0, float & x, float &y, float &z)
 {
-  x = r*std::cos(phi);
-  y = r*std::sin(phi);
-  z = r*std::tan(theta);
+  // constants
+  float Bfield = 3.8; // [T]
+  float a      = -0.002998*Bfield*Q;  
+
+  // track params
+  float p0     = std::sqrt(px0*px0 + py0*py0);
+  float rho    = a/p0; // [cm] 
+  float d0     = std::sqrt(x0*x0 + y0*y0);
+  float lam    = pz0/p0;
+
+  // useful variables
+  float c      = rho/2.0;
+  float B      = c*std::sqrt((r*r - d0*d0)/(1 + 2*c*d0));
+
+  // arc length
+  float s      = TMath::ASin(B)*2/rho;
+
+  // xyz coord at r
+  float sin_rho_s = TMath::Sin(rho*s);
+  float cos_rho_s = TMath::Cos(rho*s);
+  x = x0 + (px0/a)*sin_rho_s - (py0/a)*(1-cos_rho_s);
+  y = y0 + (py0/a)*sin_rho_s + (px0/a)*(1-cos_rho_s);
+  z = z0 + lam*s;
+
+  return s;
+}
+
+float DisplacedJetsAnalyzer::getLtrue(float s, float z)
+{
+  float L = std::sqrt(s*s + z*z);
+  return L;
 }
 
 float DisplacedJetsAnalyzer::getL(float x, float y, float z)
 {
-  float L;
-  L = std::sqrt(x*x + y*y + z*z);
+  float L = std::sqrt(x*x + y*y + z*z);
   return L;
 }
 
@@ -960,7 +1009,10 @@ void DisplacedJetsAnalyzer::clearVectors()
   tree_.genpar_Lxyz.clear();
   tree_.genpar_la.clear();
   tree_.genpar_lo.clear();
+  tree_.genpar_laline.clear();
+  tree_.genpar_loline.clear();
   tree_.genpar_beta.clear();
+  tree_.genpar_q.clear();
   tree_.mom_id.clear();
   tree_.mom_stat.clear();
   tree_.mom_e.clear();
