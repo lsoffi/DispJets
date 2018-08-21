@@ -1,0 +1,10 @@
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_103229_30552412_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_222519_9945678_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_224389_13593960_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_291787_12711138_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_360580_33655727_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_379466_20948674_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_496130_21767325_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_559391_30978963_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_643550_41695742_GENSIM.root
+root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau10mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-1p0_713309_17563488_GENSIM.root
