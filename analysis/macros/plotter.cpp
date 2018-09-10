@@ -24,8 +24,17 @@ plotter::~plotter()
 void plotter::histos( TH1map & map , TH2map & map2){
 
   // 1d histos
+  if (ctau=="0mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
+  if (ctau=="1mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
+  if (ctau=="10mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
+  if (ctau=="100mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,50,"LL particle c#tau [cm]","");
+  if (ctau=="1000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,500,"LL particle c#tau [cm]","");
+  if (ctau=="10000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",5000,0,5000,"LL particle c#tau [cm]","");
   map["LL_beta"]		= MakeTH1FPlot("LL_beta","",100,0,1,"LL particle #beta","");
-  map["LL_cTau"]		= MakeTH1FPlot("LL_cTau","",5000,0,5000,"LL particle c#tau [cm]","");
+  map["particle_dxy"]		= MakeTH1FPlot("particle_dxy","",100,0,100,"d_{xy} [cm]","");
+  map["particle_dxyz"]		= MakeTH1FPlot("particle_dxyz","",100,0,100,"d_{xyz} [cm]","");
+  map["jet_alpha"]		= MakeTH1FPlot("jet_alpha","",100,0,1,"Jet #alpha","");
+  map["jet_theta2D"]		= MakeTH1FPlot("jet_theta2D","",70,-5,2,"Jet #theta_{2D}","");
   map["nconst"]			= MakeTH1FPlot("nconst","",50,0,50,"Num. jet constituents","");
   map["const_t"]		= MakeTH1FPlot("const_t","",150,-5,10,"Jet constituent time [ns]",""); 
   map["const_pt"]		= MakeTH1FPlot("const_pt","",100,0,100,"Jet constituent p_{T} [GeV]","");
@@ -86,6 +95,9 @@ void plotter::go(){
          float jet_orig_beta  = 1.0;
          float jet_orig_lxyz  = (*genpar_loline)[gp];     
 
+         h1map["particle_dxy"]->Fill((*genpar_Lxy)[gp]);
+         h1map["particle_dxyz"]->Fill((*genpar_Lxyz)[gp]);
+
          if ( (*genpar_match_q1)[gp]==1 || (*genpar_match_q2)[gp]==1 || (*genpar_match_q3)[gp]==1 || (*genpar_match_q4)[gp]==1 ){
              h1map["const_pt"]->Fill((*genpar_pt)[gp]);
              float jet1_const_t = calcDeltaT((*mom_Lxyz)[0],(*mom_beta)[0],jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); 
@@ -114,6 +126,8 @@ void plotter::go(){
      // draw jet information (calculated in the skim)
      for (int i = 0; i < 4; i++){
          h1map["nconst"]->Fill((*jet_nconst)[i]);              // number of constituents in each jet
+         h1map["jet_alpha"]->Fill((*jet_alpha_PV)[i]);         // alpha PV of each jet
+         h1map["jet_theta2D"]->Fill((*jet_theta_2D)[i]);       // theta 2D of each jet
          h1map["jet_t"]->Fill((*jet_avg_t)[i]);                // jet (averaged constituent) timing
          h1map["jet_t_smear30"]->Fill((*jet_smear_30_t)[i]);   // smeared 30ns histos
          h1map["jet_t_smear50"]->Fill((*jet_smear_50_t)[i]);   // smeared 50ns histos
