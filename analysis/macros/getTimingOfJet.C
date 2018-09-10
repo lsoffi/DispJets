@@ -21,15 +21,25 @@ float smearVal( const float );
 void getTimingOfJet()
 {
 
-  TString path = "../";
-  TString out  = "~/www/Plots/DispJets/GenLevelPlots/TimingAnalysis/";
+  TString path = "../samples/";
+  //TString out  = "~/www/Plots/DispJets/GenLevelPlots/TimingAnalysis/";
+  std::vector< TString > ctau;
+  ctau.push_back("0mm");
+  ctau.push_back("1mm");
+  ctau.push_back("10mm");
+  ctau.push_back("100mm");
+  ctau.push_back("1000mm");
+  ctau.push_back("10000mm");
   std::vector< TString > file;
-  file.push_back(Form("%sntuple_dispjets.root",path.Data()));
+  //file.push_back(Form("%sntuple_dispjets.root",path.Data()));
+  for (int i = 0; i < ctau.size(); i++){
+    file.push_back(Form("%sntuple_xxqqqq_m50_ct%s.root",path.Data(),ctau[i].Data()));
+  }
   int nsamples = file.size();
 
-  TFile *fout = TFile::Open(Form("%splots_dispjets.root",out.Data()),"RECREATE");
- 
   for (int f = 0; f < nsamples; f++){
+    TString out  = "~/www/Plots/DispJets/GenLevelPlots/NewSamples_v3/ct"+ctau[f]+"/";
+    TFile *fout = TFile::Open(Form("%splots_dispjets.root",out.Data()),"RECREATE");
     run(file[f],out,fout);
   } 
 
@@ -39,7 +49,7 @@ void histos( TH1map & map , TH2map & map2){
 
   // 1d histos
   map["LL_beta"]		= MakeTH1FPlot("LL_beta","",100,0,1,"LL particle #beta","");
-  map["LL_cTau"]		= MakeTH1FPlot("LL_cTau","",50,0,50,"LL particle c#tau [cm]","");
+  map["LL_cTau"]		= MakeTH1FPlot("LL_cTau","",5000,0,5000,"LL particle c#tau [cm]","");
   map["nconst"]			= MakeTH1FPlot("nconst","",50,0,50,"Num. jet constituents","");
   map["const_t_ex"]		= MakeTH1FPlot("const_t_ex","",150,-5,10,"Jet constituent time [ns] Example","");
   map["const_t"]		= MakeTH1FPlot("const_t","",150,-5,10,"Jet constituent time [ns]",""); 
@@ -500,7 +510,7 @@ void run(TString file, TString out, TFile* fout){
      std::vector<int> same_mom;
      same_mom.resize(4);
      for (unsigned int gm = 0; gm < 4; gm++){
-       if ((*mom_id)[gm]==35)
+       if ((*mom_id)[gm]==9000006)
        if ((*mom_dupl)[gm]==1) continue; // only plot mom once
        h1map["LL_beta"]->Fill((*mom_beta)[gm]);
        h1map["LL_cTau"]->Fill((*mom_ctau)[gm]);

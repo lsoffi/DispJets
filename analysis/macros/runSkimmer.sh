@@ -1,7 +1,7 @@
 #! /bin/sh
 
-path="../"
-sample=${1:-"ntuples_XXto4Q_M100_CT100mm"}
+path="../samples/"
+sample=${1:-"ntuple_dispjets"}
 
 echo "Running sample: " ${sample}
 root -l -b -q "Skimmer.C("\"${path}\"","\"${sample}\"")"

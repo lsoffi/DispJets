@@ -19,7 +19,14 @@ analysis::analysis(TString indir, TString outdir, TString t_cut, TString t_res, 
   cut  = Form("weight*(%s || %s || %s || %s)",cut1.Data(),cut2.Data(),cut3.Data(),cut4.Data());
 
   // input names
-  s_file.push_back("XXto4Q_M100_CT100mm");
+  //s_file.push_back("XXto4Q_M100_CT100mm");
+  //s_file.push_back("dispjets");
+  s_file.push_back("xxqqqq_m50_ct0mm");
+  s_file.push_back("xxqqqq_m50_ct1mm");
+  s_file.push_back("xxqqqq_m50_ct10mm");
+  s_file.push_back("xxqqqq_m50_ct100mm");
+  s_file.push_back("xxqqqq_m50_ct1000mm");
+  s_file.push_back("xxqqqq_m50_ct10000mm");
   //b_file.push_back("QCD");
   nSig = s_file.size();
   nBkg = b_file.size();
@@ -57,6 +64,7 @@ void analysis::run()
     sum_bkg_val += vals[b_file[f]];
   }
   vals["bkg"] = sum_bkg_val;
+  vals["bkg"] = 0.001; // set bkg to small number for combine
 
   // write out datacard
   for (int f = 0; f < nSig; f++){
@@ -69,7 +77,7 @@ float analysis::applySel(TString file)
 {
   
   // input file
-  TFile *f = TFile::Open(Form("%sntuples_%s_skim.root",inpath.Data(),file.Data()),"READ");
+  TFile *f = TFile::Open(Form("%sntuple_%s_skim.root",inpath.Data(),file.Data()),"READ");
   if (f == NULL){ std::cout << "File not found: " << inpath << file << std::endl; return -1; }
   // input tree
   TTree *t = (TTree*)f->Get("dispjets/tree");

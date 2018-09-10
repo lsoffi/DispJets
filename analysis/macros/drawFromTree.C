@@ -14,15 +14,31 @@ TH2F * MakeTH2FPlot( const TString, const TString, const int, const double, cons
 // START
 void drawFromTree(){
 
-  TString path = "../";
-  TString out  = "~/www/Plots/DispJets/GenLevelPlots/Test/";
+  TString path = "../samples/";
+
+  std::vector< TString > ctau;
+  ctau.push_back("0mm");
+  ctau.push_back("1mm");
+  ctau.push_back("10mm");
+  ctau.push_back("100mm");
+  ctau.push_back("1000mm");
+  ctau.push_back("10000mm");
   std::vector< TString > file;
-  file.push_back(Form("%sntuple_dispjets.root",path.Data()));
+  //file.push_back(Form("%sntuple_dispjets.root",path.Data()));
+  for (int i = 0; i < ctau.size(); i++){
+    file.push_back(Form("%sntuple_xxqqqq_m50_ct%s.root",path.Data(),ctau[i].Data()));
+  }
+  //file.push_back(Form("%sntuple_xxqqqq_m50_ct0mm.root",path.Data()));
+  //file.push_back(Form("%sntuple_xxqqqq_m50_ct1mm.root",path.Data()));
+  //file.push_back(Form("%sntuple_xxqqqq_m50_ct10mm.root",path.Data()));
+  //file.push_back(Form("%sntuple_xxqqqq_m50_ct100mm.root",path.Data()));
+  //file.push_back(Form("%sntuple_xxqqqq_m50_ct1000mm.root",path.Data()));
+  //file.push_back(Form("%sntuple_xxqqqq_m50_ct10000mm.root",path.Data()));
   int nsamples = file.size();
 
-  TFile *fout = TFile::Open(Form("%splots_dispjets.root",out.Data()),"RECREATE");
- 
   for (int f = 0; f < nsamples; f++){
+    TString out  = "~/www/Plots/DispJets/GenLevelPlots/NewSamples_v3/ct"+ctau[f]+"/";
+    TFile *fout = TFile::Open(Form("%splots_dispjets.root",out.Data()),"RECREATE");
     run(file[f],out,fout);
   } 
 
@@ -520,7 +536,7 @@ void run(TString file, TString out, TFile* fout){
       h1map["gp_Lxy"]->Fill((*genpar_Lxy)[gp]);
       h1map["gp_Lxyz"]->Fill((*genpar_Lxyz)[gp]);
       if ((*mom_id)[gp] == 0 || (*mom_stat)[gp] == 0) continue;
-      if (entry==0) std::cout << "ID: " << (*genpar_id)[gp] << " mom ID: " << (*mom_id)[gp] << std::endl;
+      //if (entry==0) std::cout << "ID: " << (*genpar_id)[gp] << " mom ID: " << (*mom_id)[gp] << std::endl;
       // mother particle info
       h1map["gm_id"]->Fill((*mom_id)[gp]);
       h1map["gm_stat"]->Fill((*mom_stat)[gp]);
