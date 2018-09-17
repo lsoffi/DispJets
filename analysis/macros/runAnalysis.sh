@@ -1,10 +1,10 @@
 #! /bin/sh
 
-indir="../samples/"       # input directory
+indir="../samples/"      # input directory
 outdir="output_files/"   # output directory
 tcut=${1:-"1.0"}         # jet time cut [ns]
-tres=${2:-"30"}          # time resolution [0,30,180] allowed
-lumi=${3:-"30000"}       # total integrated luminosity [pb]
+tres=${2:-"30"}          # time resolution [0,30,50,70,180] allowed
+lumi=${3:-"300"}         # total integrated luminosity [fb]
 
 mkdir -p ${outdir}
 
