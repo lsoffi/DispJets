@@ -25,6 +25,8 @@ public:
   ~multiplot();
   void go(); 
   void setuphistos();
+  void setupcuts();
+  void setupeffplots(unsigned int);
   void prepcanvas();
   void drawplots();
   void saveplots();
@@ -42,6 +44,9 @@ private:
   LegVec		leg;
   CanVec		canv; 
   ColMap		colors;
+  std::vector<UInt_t>	ncuts;
+  std::vector< std::vector< float > > cuts;
+  std::vector< std::vector< std::vector<float> > > e;
  
 };
 #endif

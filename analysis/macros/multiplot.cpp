@@ -31,28 +31,106 @@ void multiplot::go()
 
   // setup histos to read
   multiplot::setuphistos();
+  // setup cuts
+  multiplot::setupcuts();
  
-  float tmp_int;
+  float tmp_cut, tmp_int;
+  float tmp_min, tmp_max, tmp_eff;
  
-  h.resize(nh);
-  for (unsigned int i = 0; i < nh; i++){
+  h.resize(nh); // histograms
+  e.resize(nh); // efficiencies
+  for (unsigned int i = 0; i < nh; i++){ // loop over type of histos
     h[i].resize(nsub[i]);
-    for (unsigned int j = 0; j < nsub[i]; j++){
+    e[i].resize(nsub[i]);
+    for (unsigned int j = 0; j < nsub[i]; j++){ // loop over individual histos
+
       // pick up the histograms
       h[i][j] = (TH1F*)fin->Get(Form("%s",hist[i][j].Data()));
       if (h[i][j]==NULL) std::cout << "NO HISTO" << std::endl;
-      // rescale by integral  
+      // get the efficiency
+      e[i][j].resize(ncuts[i]);
       tmp_int = h[i][j]->Integral();
+      tmp_max = h[i][j]->GetNbinsX(); // max bin 
+
+      for (unsigned int k = 0; k < ncuts[i]; k++){ // loop over cuts 
+        tmp_min = h[i][j]->FindBin(cuts[i][k]);
+        tmp_cut = h[i][j]->Integral(tmp_min,tmp_max);
+        e[i][j][k] = tmp_cut/tmp_int;
+      }// end loop over cuts
+
+      // rescale by integral  
       if (tmp_int > 0) h[i][j]->Scale(1/tmp_int); 
-    } 
-  } 
+
+    }// end loop over individual histos 
+  }// end loop over type of histos
 
   gStyle->SetOptStat(0);
   multiplot::prepcanvas();
   multiplot::drawplots();
   multiplot::saveplots();
 
+  for (unsigned int i = 0; i < nh; i++){
+    multiplot::setupeffplots(i);
+  }
+
 }// end go
+
+void multiplot::setupeffplots(unsigned int i)
+{
+
+  // i = histogram type index
+  // j = subhistogram index
+  // k = cut index
+
+  // setup canvas
+  TCanvas * c = new TCanvas(Form("eff_ct%s_%s",ctau.Data(),hist[i][0].Data()),"",600,600);
+  c->cd();
+
+  // setup legend
+  TLegend * l = new TLegend(0.5,0.7,0.9,0.9,NULL,"brNDC");
+  l->SetLineColor(1);
+  l->SetLineStyle(1);
+  l->SetFillColor(0);
+  l->SetFillStyle(0);
+
+  // setup histo
+  unsigned int nbin = cuts[i].size()-1;
+  float cutarr[cuts[i].size()]; 
+  std::copy(cuts[i].begin(), cuts[i].end(), cutarr);
+  TH1FVec heff;
+  heff.resize(nsub[i]);
+  for (unsigned int j = 0; j < nsub[i]; j++){
+    heff[j] = new TH1F(Form("heff_%i",j),"",nbin,cutarr);
+    // fill for each cut
+    for (unsigned int k = 0; k < ncuts[i]; k++){
+      heff[j]->Fill(cuts[i][k],e[i][j][k]);
+    }
+  }
+
+  // setup labels
+  heff[0]->GetXaxis()->SetTitle("Cut value");
+  heff[0]->GetYaxis()->SetTitle("Efficiency");
+
+  // draw histo
+  for (unsigned int j = 0; j < nsub[i]; j++){
+    heff[j]->SetLineColor(colors[hist[i][j]]);
+    if (j==0) heff[j]->Draw("HIST");
+    else heff[j]->Draw("HIST SAME");
+    l->AddEntry(heff[j],hist[i][j],"l"); 
+  }
+  l->Draw("SAME");
+
+  // save
+  c->SaveAs(Form("%sEff_ct%s_%s.png",odir.Data(),ctau.Data(),hist[i][0].Data()));
+  c->SaveAs(Form("%sEff_ct%s_%s.pdf",odir.Data(),ctau.Data(),hist[i][0].Data()));
+  ofile->cd();
+  c->Write();
+ 
+  // delete
+  for (unsigned int j = 0; j < nsub[i]; j++) delete heff[j];
+  delete l;
+  delete c;
+}
 
 void multiplot::prepcanvas()
 {
@@ -105,6 +183,37 @@ void multiplot::saveplots()
   } 
 
 }// end saveplots
+
+void multiplot::setupcuts()
+{
+
+  cuts.resize(nh);
+  // cuts[0] are for jet t plots
+  cuts[0].push_back(0.00);
+  cuts[0].push_back(0.25);
+  cuts[0].push_back(0.50);
+  cuts[0].push_back(0.75);
+  cuts[0].push_back(1.00);
+  cuts[0].push_back(1.25);
+  cuts[0].push_back(1.50);
+  cuts[0].push_back(1.75);
+  cuts[0].push_back(2.00);
+  // cuts[1] are for unmatch t plots
+  cuts[1].push_back(0.00);
+  cuts[1].push_back(0.25);
+  cuts[1].push_back(0.50);
+  cuts[1].push_back(0.75);
+  cuts[1].push_back(1.00);
+  cuts[1].push_back(1.25);
+  cuts[1].push_back(1.50);
+  cuts[1].push_back(1.75);
+  cuts[1].push_back(2.00);
+
+  for (unsigned int i = 0; i < nh; i++){
+    ncuts.push_back(cuts[i].size());
+  }
+
+}// end setupcuts
 
 void multiplot::setuphistos()
 {
