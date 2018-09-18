@@ -26,7 +26,6 @@ public:
   ~overlay();
   void go();
   void setupplots();
-  void setupextras();
   void prepcanvas();
   void drawplots();
   void saveplots();
@@ -39,13 +38,13 @@ private:
   TString		odir;
   TFile*		ofile;
   Histos		hnames;
-  Histos		hextra; 
   unsigned int		nh;
   TH1VecVec		histos;
   TH1VecVec		ohistos;
   CanVec		canv;
   LegVec		leg;
   Colors		colors;
+  std::vector<int>	max_val;
 
 };
 

@@ -37,14 +37,15 @@ void overlay::go()
 
   // setup names of plots to overlay for all samples
   overlay::setupplots();
-  // setup names of plots to overlay per sample
-  overlay::setupextras();
 
   float tmp_int;
-  
+  float h_max = 0;
+  float tmp_max = 0;
+ 
   // get the histos
   histos.resize(nh);
   ohistos.resize(nh);
+  max_val.resize(nh);
   for (unsigned int i = 0; i < nh; i++){
     histos[i].resize(nfiles);
     ohistos[i].resize(nfiles);
@@ -55,9 +56,12 @@ void overlay::go()
       ohistos[i][j] = (TH1F*)histos[i][j]->Clone();
       // rescale by integral
       tmp_int = histos[i][j]->Integral();
-      std::cout << "file : " << ctau[j] << "  " << tmp_int << std::endl;
-      if (tmp_int > 0 ) ohistos[i][j]->Scale(1/tmp_int); 
+      if (tmp_int > 0 ) ohistos[i][j]->Scale(1/tmp_int);
+      // get maximum value of the histo
+      h_max   = ohistos[i][j]->GetMaximum();
+      tmp_max = (h_max >= tmp_max)? h_max : tmp_max;  
     }
+    max_val[i] = tmp_max; 
   }
 
   gStyle->SetOptStat(0);
@@ -65,18 +69,19 @@ void overlay::go()
   overlay::drawplots();
   overlay::saveplots();
 
-
 }// end go
 
 void overlay::drawplots()
 {
 
-  leg.resize(nh);
   for (unsigned int i = 0; i < nh; i++){
     canv[i]->cd();
-    for (unsigned int j = 1; j < nfiles; j++){
+    for (unsigned int j = 0; j < nfiles; j++){
       ohistos[i][j]->SetLineColor(colors[ctau[j]]);
-      if (j==0) ohistos[i][j]->Draw("HIST");
+      if (j==0){
+        ohistos[i][j]->SetMaximum(max_val[i]*10);
+        ohistos[i][j]->Draw("AXIS");
+      }
       else ohistos[i][j]->Draw("HIST SAME");
       leg[i]->AddEntry(ohistos[i][j],TString::Format("%s",ctau[j].Data()),"l");
     }
@@ -133,12 +138,4 @@ void overlay::setupplots()
   nh = hnames.size();
 
 }// end setupplots
-
-void overlay::setupextras()
-{
-
-  hextra.push_back("jet_t,jet_t_smear30,jet_t_smear50,jet_t_smear70,jet_t_smear180");
-  hextra.push_back("unmatch_t,unmatch_t_smear30,unmatch_t_smear50,unmatch_t_smear70,unmatch_t_smear180");
-
-}// end setupextras
 
