@@ -68,6 +68,14 @@ struct tree_struc_{
   std::vector<int>		genpar_match_q2;
   std::vector<int>		genpar_match_q3;
   std::vector<int>		genpar_match_q4;
+  std::vector<int>		genpar_match_q1lo;
+  std::vector<int>		genpar_match_q2lo;
+  std::vector<int>		genpar_match_q3lo;
+  std::vector<int>		genpar_match_q4lo;
+  std::vector<float>		genpar_dv1;
+  std::vector<float>		genpar_dv2;
+  std::vector<float>		genpar_dv3;
+  std::vector<float>		genpar_dv4;
   std::vector<float>		genjet_i;
   std::vector<int>		genjet_match;
   std::vector<float>		genjet0_const_st;
@@ -100,6 +108,7 @@ struct tree_struc_{
   std::vector<float>		genpar_pt;
   std::vector<float>		genpar_eta;
   std::vector<float>		genpar_phi;
+  std::vector<float>		genpar_theta;
   std::vector<float>		genpar_vx;
   std::vector<float>		genpar_vy;
   std::vector<float>		genpar_vz;
@@ -120,6 +129,7 @@ struct tree_struc_{
   std::vector<float>		mom_pt;
   std::vector<float>		mom_eta;
   std::vector<float>		mom_phi;
+  std::vector<float>		mom_theta;
   std::vector<float>    	mom_vx;
   std::vector<float>		mom_vy;
   std::vector<float>		mom_vz;
@@ -290,6 +300,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<float>	genpar_pt;
   std::vector<float>	genpar_eta;
   std::vector<float>	genpar_phi;
+  std::vector<float>	genpar_theta;
   std::vector<float>	genpar_vx;
   std::vector<float>	genpar_vy;
   std::vector<float>	genpar_vz;
@@ -310,6 +321,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<float>	mom_pt;
   std::vector<float>	mom_eta;
   std::vector<float>	mom_phi;
+  std::vector<float>	mom_theta;
   std::vector<float>    mom_vx;
   std::vector<float>	mom_vy;
   std::vector<float>	mom_vz;
@@ -326,6 +338,14 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<int>	match_q3;
   std::vector<int>	match_q4;
   std::vector<int>	mom_dupl;
+  std::vector<int>	match_q1lo;
+  std::vector<int>	match_q2lo;
+  std::vector<int>	match_q3lo;
+  std::vector<int>	match_q4lo;
+  std::vector<float>	deltav1;
+  std::vector<float>	deltav2;
+  std::vector<float>	deltav3;
+  std::vector<float>	deltav4;
 
   if (genjets.isValid()){ // make sure have genjet collection
     ngenjets = genjets->size();
@@ -447,6 +467,12 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
          quarknum.push_back(0); 
          continue;
       }
+
+      //if (genpar_iter.mother(0) != NULL){
+      //  std::cout << "Genpar: " << genpar_iter.pdgId() << " " << genpar_iter.status() << " " << genpar_iter.mother(0)->pdgId() << " " << genpar_iter.mother(0)->status() << std::endl;
+      //  std::cout << "------- v2: " << genpar_iter.vertex().x() << " " << genpar_iter.vertex().y() << " " << genpar_iter.vertex().z() << std::endl;
+      //  std::cout << "------- m1: " << genpar_iter.mother(0)->vx() << " " << genpar_iter.mother(0)->vy() << " " << genpar_iter.mother(0)->vz() << std::endl;
+      //}
  
       // save interesting quarks
       interestingjet++;
@@ -465,35 +491,36 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       if (interestingjet==4){ q4_eta = genpar_iter.eta(); q4_phi = genpar_iter.phi(); q4_vx = vx; q4_vy = vy; q4_vz = vz;}
 
       // initialize mom info
-      float mx           = -10000;
-      float my           = -10000;
-      float mz           = -10000;
-      float dx           = -10000;
-      float dy           = -10000;
-      float dz           = -10000;
-      float mBeta        = -10000; 
-      float mGama        = -10000; 
-      float mLxy         = -10000; 
-      float mLxyz        = -10000; 
-      float mcTau        = -10000; 
-      int   tmp_mom_id   = -10000;
-      int   tmp_mom_stat = -10000;
-      float tmp_mom_e    = -10000; 
-      float tmp_mom_m    = -10000;
-      float tmp_mom_p    = -10000;
-      float tmp_mom_pt   = -10000;
-      float tmp_mom_eta  = -10000;
-      float tmp_mom_phi  = -10000;
-      float tmp_mom_vx   = -10000;
-      float tmp_mom_vy   = -10000;
-      float tmp_mom_vz   = -10000;
-      float tmp_mom_beta = -10000;
-      float tmp_mom_gama = -10000;
-      float tmp_mom_Lxy  = -10000;
-      float tmp_mom_Lz   = -10000;
-      float tmp_mom_Lxyz = -10000;
-      float tmp_mom_ctau = -10000;
-      float tmp_mom_dupl = 0;
+      float mx            = -10000;
+      float my            = -10000;
+      float mz            = -10000;
+      float dx            = -10000;
+      float dy            = -10000;
+      float dz            = -10000;
+      float mBeta         = -10000; 
+      float mGama         = -10000; 
+      float mLxy          = -10000; 
+      float mLxyz         = -10000; 
+      float mcTau         = -10000; 
+      int   tmp_mom_id    = -10000;
+      int   tmp_mom_stat  = -10000;
+      float tmp_mom_e     = -10000; 
+      float tmp_mom_m     = -10000;
+      float tmp_mom_p     = -10000;
+      float tmp_mom_pt    = -10000;
+      float tmp_mom_eta   = -10000;
+      float tmp_mom_phi   = -10000;
+      float tmp_mom_theta = -10000;
+      float tmp_mom_vx    = -10000;
+      float tmp_mom_vy    = -10000;
+      float tmp_mom_vz    = -10000;
+      float tmp_mom_beta  = -10000;
+      float tmp_mom_gama  = -10000;
+      float tmp_mom_Lxy   = -10000;
+      float tmp_mom_Lz    = -10000;
+      float tmp_mom_Lxyz  = -10000;
+      float tmp_mom_ctau  = -10000;
+      float tmp_mom_dupl  = 0;
  
       // now get interesting quarks' mother or gmother information
       std::vector< const reco::Candidate * > mother;
@@ -522,6 +549,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         tmp_mom_pt 	= mom->pt();
         tmp_mom_eta 	= mom->eta();
         tmp_mom_phi 	= mom->phi();
+        tmp_mom_theta   = mom->theta();
         tmp_mom_vx 	= mom->vx();
         tmp_mom_vy 	= mom->vy();
         tmp_mom_vz 	= mom->vz();
@@ -531,10 +559,18 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         tmp_mom_Lz 	= dz;
         tmp_mom_Lxyz 	= mLxyz;
         tmp_mom_ctau 	= mcTau;
-        if (std::abs(mom->pdgId())==35) mom35++;
-        if (std::abs(mom->pdgId())==36) mom36++;
-        if (std::abs(mom->pdgId())==35 && mom35>1) tmp_mom_dupl = 1;
-        if (std::abs(mom->pdgId())==36 && mom36>1) tmp_mom_dupl = 1;
+
+        // mom ID for original samples
+        //if (std::abs(mom->pdgId())==35) mom35++;
+        //if (std::abs(mom->pdgId())==36) mom36++;
+        //if (std::abs(mom->pdgId())==35 && mom35>1) tmp_mom_dupl = 1;
+        //if (std::abs(mom->pdgId())==36 && mom36>1) tmp_mom_dupl = 1;
+
+        // mom ID for new samples 
+        if (std::abs(mom->pdgId())==9000006) mom35++;  
+        if (std::abs(mom->pdgId())==9000007) mom36++;
+        if (std::abs(mom->pdgId())==9000006 && mom35>1) tmp_mom_dupl = 1;
+        if (std::abs(mom->pdgId())==9000007 && mom36>1) tmp_mom_dupl = 1;
         if (interestingjet==1){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
         if (interestingjet==2){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
         if (interestingjet==3){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
@@ -555,6 +591,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       mom_pt.push_back(tmp_mom_pt);
       mom_eta.push_back(tmp_mom_eta);
       mom_phi.push_back(tmp_mom_phi);
+      mom_theta.push_back(tmp_mom_theta);
       mom_vx.push_back(tmp_mom_vx);
       mom_vy.push_back(tmp_mom_vy);
       mom_vz.push_back(tmp_mom_vz);
@@ -595,6 +632,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       genpar_pt.push_back(genpar_iter.pt());
       genpar_eta.push_back(genpar_iter.eta());
       genpar_phi.push_back(genpar_iter.phi());
+      genpar_theta.push_back(genpar_iter.theta());
       genpar_vx.push_back(vx);
       genpar_vy.push_back(vy);
       genpar_vz.push_back(vz);
@@ -605,6 +643,8 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       float dR1 = 10; float dR2 = 10; float dR3 = 10; float dR4 = 10;
       float dv1 = 0;  float dv2 = 0;  float dv3 = 0;  float dv4 = 0;
       int match0 = 0; int match1 = 0; int match2 = 0; int match3 = 0; int match4 = 0;
+      int match1lo = 0; int match2lo = 0; int match3lo = 0; int match4lo = 0; 
+
       // dR matching
       dR1 = deltaR(q1_eta,q1_phi,genpar_iter.eta(),genpar_iter.phi()); 
       dR2 = deltaR(q2_eta,q2_phi,genpar_iter.eta(),genpar_iter.phi()); 
@@ -620,7 +660,13 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       if (q2_eta < 1.5 && dR2 < 0.4 && dv2 < 10) match2 = 1;
       if (q3_eta < 1.5 && dR3 < 0.4 && dv3 < 10) match3 = 1;
       if (q4_eta < 1.5 && dR4 < 0.4 && dv4 < 10) match4 = 1;
-      if (q1_eta < 1.5 && q2_eta < 1.5 && q3_eta < 1.5 && q4_eta < 1.5 && dR1 > 0.8 && dR2 > 0.8 && dR3 > 0.8 && dR4 > 0.8) match0 = 1;
+      if (genpar_iter.eta() < 1.5 && dR1 > 0.8 && dR2 > 0.8 && dR3 > 0.8 && dR4 > 0.8) match0 = 1;
+
+      // loose matching (no requirement on matching the SV) -- for use in calculating alpha_jet_PV
+      if (q1_eta < 1.5 && dR1 < 0.4) match1lo = 1;
+      if (q2_eta < 1.5 && dR2 < 0.4) match2lo = 1;
+      if (q3_eta < 1.5 && dR3 < 0.4) match3lo = 1;
+      if (q4_eta < 1.5 && dR4 < 0.4) match4lo = 1;
 
       // if particles match more than one "jet"
       if ( match1 + match2 + match3 + match4 > 1){
@@ -639,6 +685,16 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       match_q2.push_back(match2);
       match_q3.push_back(match3);
       match_q4.push_back(match4);
+  
+      match_q1lo.push_back(match1lo);
+      match_q2lo.push_back(match2lo);
+      match_q3lo.push_back(match3lo);
+      match_q4lo.push_back(match4lo);
+
+      deltav1.push_back(dv1);
+      deltav2.push_back(dv2);
+      deltav3.push_back(dv3);
+      deltav4.push_back(dv4);
 
       // calculating timing delay
       float px0 = genpar_iter.px();
@@ -650,6 +706,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       float lTline = getL(xT-vx,yT-vy,zT-vz);                   // distance from SV to point on timing layer
       float lo = getLtrue(s,zT-q1_mz);                          // distance from PV to point on timing layer
       float lT = getLtrue(s,zT-vz);                             // distance from SV to point on timing layer
+
       genpar_lo.push_back(lo);
       genpar_la.push_back(lT);
       genpar_loline.push_back(loline);
@@ -721,23 +778,24 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genjet3_const_vz.push_back(genjet3_const_vz[i]);
   } 
 
-  if (verbose_) std::cout << "mom_id   " << mom_id.size()    << std::endl; 
-  if (verbose_) std::cout << "mom_stat " << mom_stat.size()  << std::endl; 
-  if (verbose_) std::cout << "mom_e    " << mom_e.size()     << std::endl;
-  if (verbose_) std::cout << "mom_p    " << mom_p.size()     << std::endl; 
-  if (verbose_) std::cout << "mom_m    " << mom_m.size()     << std::endl;  
-  if (verbose_) std::cout << "mom_pt   " << mom_pt.size()    << std::endl;  
-  if (verbose_) std::cout << "mom_eta  " << mom_eta.size()   << std::endl;  
-  if (verbose_) std::cout << "mom_phi  " << mom_phi.size()   << std::endl; 
-  if (verbose_) std::cout << "mom_vx   " << mom_vx.size()    << std::endl;  
-  if (verbose_) std::cout << "mom_vy   " << mom_vy.size()    << std::endl; 
-  if (verbose_) std::cout << "mom_vz   " << mom_vz.size()    << std::endl; 
-  if (verbose_) std::cout << "mom_beta " << mom_beta.size()  << std::endl;  
-  if (verbose_) std::cout << "mom_gama " << mom_gama.size()  << std::endl;  
-  if (verbose_) std::cout << "mom_Lxy  " << mom_Lxy.size()   << std::endl;  
-  if (verbose_) std::cout << "mom_Lz   " << mom_Lz.size()    << std::endl; 
-  if (verbose_) std::cout << "mom_Lxyz " << mom_Lxyz.size()  << std::endl;  
-  if (verbose_) std::cout << "mom_ctau " << mom_ctau.size()  << std::endl;  
+  if (verbose_) std::cout << "mom_id    " << mom_id.size()    << std::endl; 
+  if (verbose_) std::cout << "mom_stat  " << mom_stat.size()  << std::endl; 
+  if (verbose_) std::cout << "mom_e     " << mom_e.size()     << std::endl;
+  if (verbose_) std::cout << "mom_p     " << mom_p.size()     << std::endl; 
+  if (verbose_) std::cout << "mom_m     " << mom_m.size()     << std::endl;  
+  if (verbose_) std::cout << "mom_pt    " << mom_pt.size()    << std::endl;  
+  if (verbose_) std::cout << "mom_eta   " << mom_eta.size()   << std::endl;  
+  if (verbose_) std::cout << "mom_phi   " << mom_phi.size()   << std::endl;
+  if (verbose_) std::cout << "mom_theta " << mom_theta.size() << std::endl; 
+  if (verbose_) std::cout << "mom_vx    " << mom_vx.size()    << std::endl;  
+  if (verbose_) std::cout << "mom_vy    " << mom_vy.size()    << std::endl; 
+  if (verbose_) std::cout << "mom_vz    " << mom_vz.size()    << std::endl; 
+  if (verbose_) std::cout << "mom_beta  " << mom_beta.size()  << std::endl;  
+  if (verbose_) std::cout << "mom_gama  " << mom_gama.size()  << std::endl;  
+  if (verbose_) std::cout << "mom_Lxy   " << mom_Lxy.size()   << std::endl;  
+  if (verbose_) std::cout << "mom_Lz    " << mom_Lz.size()    << std::endl; 
+  if (verbose_) std::cout << "mom_Lxyz  " << mom_Lxyz.size()  << std::endl;  
+  if (verbose_) std::cout << "mom_ctau  " << mom_ctau.size()  << std::endl;  
 
   for (int ip = 0; ip < ngenpart; ip++){
     tree_.genpar_id.push_back(genpar_id[ip]);
@@ -745,6 +803,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genpar_pt.push_back(genpar_pt[ip]);
     tree_.genpar_eta.push_back(genpar_eta[ip]);
     tree_.genpar_phi.push_back(genpar_phi[ip]);
+    tree_.genpar_theta.push_back(genpar_theta[ip]);
     tree_.genpar_vx.push_back(genpar_vx[ip]);
     tree_.genpar_vy.push_back(genpar_vy[ip]);
     tree_.genpar_vz.push_back(genpar_vz[ip]);
@@ -756,12 +815,20 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genpar_match_q2.push_back(match_q2[ip]);
     tree_.genpar_match_q3.push_back(match_q3[ip]);
     tree_.genpar_match_q4.push_back(match_q4[ip]);
+    tree_.genpar_dv1.push_back(deltav1[ip]);
+    tree_.genpar_dv2.push_back(deltav2[ip]);
+    tree_.genpar_dv3.push_back(deltav3[ip]);
+    tree_.genpar_dv4.push_back(deltav4[ip]);
     tree_.genpar_la.push_back(genpar_la[ip]);
     tree_.genpar_lo.push_back(genpar_lo[ip]);
     tree_.genpar_laline.push_back(genpar_laline[ip]);
     tree_.genpar_loline.push_back(genpar_loline[ip]);
     tree_.genpar_beta.push_back(genpar_beta[ip]);
     tree_.genpar_q.push_back(genpar_q[ip]);
+    tree_.genpar_match_q1lo.push_back(match_q1lo[ip]);
+    tree_.genpar_match_q2lo.push_back(match_q2lo[ip]);
+    tree_.genpar_match_q3lo.push_back(match_q3lo[ip]);
+    tree_.genpar_match_q4lo.push_back(match_q4lo[ip]);
   }
 
   // save mom info for the 4 quarks of interest
@@ -774,6 +841,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.mom_pt.push_back(mom_pt[ip]);
     tree_.mom_eta.push_back(mom_eta[ip]);
     tree_.mom_phi.push_back(mom_phi[ip]);
+    tree_.mom_theta.push_back(mom_theta[ip]);
     tree_.mom_vx.push_back(mom_vx[ip]);
     tree_.mom_vy.push_back(mom_vy[ip]);
     tree_.mom_vz.push_back(mom_vz[ip]);
@@ -856,6 +924,7 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("genpar_pt",		&tree_.genpar_pt);
   tree->Branch("genpar_eta",		&tree_.genpar_eta);
   tree->Branch("genpar_phi",		&tree_.genpar_phi);
+  tree->Branch("genpar_theta",		&tree_.genpar_theta);
   tree->Branch("genpar_vx",		&tree_.genpar_vx);
   tree->Branch("genpar_vy",		&tree_.genpar_vy);
   tree->Branch("genpar_vz",		&tree_.genpar_vz);
@@ -867,12 +936,20 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("genpar_match_q2",	&tree_.genpar_match_q2);
   tree->Branch("genpar_match_q3",	&tree_.genpar_match_q3);
   tree->Branch("genpar_match_q4",	&tree_.genpar_match_q4);
+  tree->Branch("genpar_dv1",		&tree_.genpar_dv1);
+  tree->Branch("genpar_dv2",		&tree_.genpar_dv2);
+  tree->Branch("genpar_dv3",		&tree_.genpar_dv3);
+  tree->Branch("genpar_dv4",		&tree_.genpar_dv4);
   tree->Branch("genpar_lo",		&tree_.genpar_lo);
   tree->Branch("genpar_la",		&tree_.genpar_la);
   tree->Branch("genpar_loline",		&tree_.genpar_loline);
   tree->Branch("genpar_laline",		&tree_.genpar_laline);
   tree->Branch("genpar_beta",		&tree_.genpar_beta);
   tree->Branch("genpar_q",		&tree_.genpar_q);
+  tree->Branch("genpar_match_q1lo",	&tree_.genpar_match_q1lo);
+  tree->Branch("genpar_match_q2lo",	&tree_.genpar_match_q2lo);
+  tree->Branch("genpar_match_q3lo",	&tree_.genpar_match_q3lo);
+  tree->Branch("genpar_match_q4lo",	&tree_.genpar_match_q4lo);
 
   // gen particle mom stuff
   tree->Branch("nmothers",		&tree_.nmothers,		"nmothers/I");
@@ -884,6 +961,7 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("mom_pt",		&tree_.mom_pt);
   tree->Branch("mom_eta",		&tree_.mom_eta);
   tree->Branch("mom_phi",		&tree_.mom_phi);
+  tree->Branch("mom_theta",		&tree_.mom_theta);
   tree->Branch("mom_vx",		&tree_.mom_vx);
   tree->Branch("mom_vy",		&tree_.mom_vy);
   tree->Branch("mom_vz",		&tree_.mom_vz);
@@ -900,13 +978,15 @@ float DisplacedJetsAnalyzer::getXYZ(float r, float Q, float x0, float y0, float 
 {
   // constants
   float Bfield = 3.8; // [T]
-  float a      = -0.002998*Bfield*Q;  
+  float a      = -0.002998*Bfield*Q;           // Paul avery's convention 
 
   // track params
-  float p0     = std::sqrt(px0*px0 + py0*py0);
-  float rho    = a/p0; // [cm] 
-  float d0     = std::sqrt(x0*x0 + y0*y0);
-  float lam    = pz0/p0;
+  float p0     = std::sqrt(px0*px0 + py0*py0); // pt
+  float rho    = a/p0;                         // inverse radius of curvature [cm]          
+  float dxy    = (-x0*py0 + y0*px0)/p0;        //  
+  //std::cout << "dxy: " << dxy << " "  << std::sqrt(x0*x0 + y0*y0) << std::endl; 
+  float d0     = -dxy;                         // CMS definition of d0
+  float lam    = pz0/p0;                       // 
 
   // useful variables
   float c      = rho/2.0;
@@ -921,6 +1001,12 @@ float DisplacedJetsAnalyzer::getXYZ(float r, float Q, float x0, float y0, float 
   x = x0 + (px0/a)*sin_rho_s - (py0/a)*(1-cos_rho_s);
   y = y0 + (py0/a)*sin_rho_s + (px0/a)*(1-cos_rho_s);
   z = z0 + lam*s;
+
+  //float d      = std::sqrt( (x-x0)*(x-x0) + (y-y0)*(y-y0) ); // straight line length
+  //float R      = 1/rho; // radius of curvature
+  //float salt   = R*TMath::ACos((2*R*R - d*d)/(2*R*R)); // sagita
+  //if (s < d) std::cout << " NOOOO S smaller than D " << std::endl; 
+  //std::cout << "s: " << s << " " << salt << " vs. d: " << d << std::endl;
 
   return s;
 }
@@ -971,6 +1057,14 @@ void DisplacedJetsAnalyzer::clearVectors()
   tree_.genpar_match_q2.clear();
   tree_.genpar_match_q3.clear();
   tree_.genpar_match_q4.clear();
+  tree_.genpar_match_q1lo.clear();
+  tree_.genpar_match_q2lo.clear();
+  tree_.genpar_match_q3lo.clear();
+  tree_.genpar_match_q4lo.clear();
+  tree_.genpar_dv1.clear();
+  tree_.genpar_dv2.clear();
+  tree_.genpar_dv3.clear();
+  tree_.genpar_dv4.clear();
   tree_.genjet_i.clear();
   tree_.genjet_match.clear();
   tree_.genjet0_const_st.clear();
@@ -1002,6 +1096,7 @@ void DisplacedJetsAnalyzer::clearVectors()
   tree_.genpar_pt.clear();
   tree_.genpar_eta.clear();
   tree_.genpar_phi.clear();
+  tree_.genpar_theta.clear();
   tree_.genpar_vx.clear();
   tree_.genpar_vy.clear();
   tree_.genpar_vz.clear();
@@ -1021,6 +1116,7 @@ void DisplacedJetsAnalyzer::clearVectors()
   tree_.mom_pt.clear();
   tree_.mom_eta.clear();
   tree_.mom_phi.clear();
+  tree_.mom_theta.clear();
   tree_.mom_vx.clear();
   tree_.mom_vy.clear();
   tree_.mom_vz.clear();
