@@ -54,6 +54,10 @@ private:
   Long64_t        event;
   Float_t         weight;
   Int_t           ngenjets;
+  Int_t           genjet0_nconst;
+  Int_t           genjet1_nconst;
+  Int_t           genjet2_nconst;
+  Int_t           genjet3_nconst;
   vector<float>   *genjet_pt;
   vector<float>   *genjet_e;
   vector<float>   *genjet_eta;
@@ -68,24 +72,36 @@ private:
   vector<float>   *genjet0_const_st;
   vector<float>   *genjet0_const_id;
   vector<float>   *genjet0_const_pt;
+  vector<float>   *genjet0_const_pv;
+  vector<float>   *genjet0_const_theta;
+  vector<float>   *genjet0_const_mtheta;
   vector<float>   *genjet0_const_vx;
   vector<float>   *genjet0_const_vy;
   vector<float>   *genjet0_const_vz;
   vector<float>   *genjet1_const_st;
   vector<float>   *genjet1_const_id;
   vector<float>   *genjet1_const_pt;
+  vector<float>   *genjet1_const_pv;
+  vector<float>   *genjet1_const_theta;
+  vector<float>   *genjet1_const_mtheta;
   vector<float>   *genjet1_const_vx;
   vector<float>   *genjet1_const_vy;
   vector<float>   *genjet1_const_vz;
   vector<float>   *genjet2_const_st;
   vector<float>   *genjet2_const_id;
   vector<float>   *genjet2_const_pt;
+  vector<float>   *genjet2_const_pv;
+  vector<float>   *genjet2_const_theta;
+  vector<float>   *genjet2_const_mtheta;
   vector<float>   *genjet2_const_vx;
   vector<float>   *genjet2_const_vy;
   vector<float>   *genjet2_const_vz;
   vector<float>   *genjet3_const_st;
   vector<float>   *genjet3_const_id;
   vector<float>   *genjet3_const_pt;
+  vector<float>   *genjet3_const_pv;
+  vector<float>   *genjet3_const_theta;
+  vector<float>   *genjet3_const_mtheta;
   vector<float>   *genjet3_const_vx;
   vector<float>   *genjet3_const_vy;
   vector<float>   *genjet3_const_vz;
@@ -107,6 +123,10 @@ private:
   vector<int>     *genpar_match_q2;
   vector<int>     *genpar_match_q3;
   vector<int>     *genpar_match_q4;
+  vector<float>   *genpar_dv1;
+  vector<float>   *genpar_dv2;
+  vector<float>   *genpar_dv3;
+  vector<float>   *genpar_dv4;
   vector<float>   *genpar_lo;
   vector<float>   *genpar_la;
   vector<float>   *genpar_loline;
@@ -137,15 +157,19 @@ private:
   vector<float>   *mom_Lxyz;
   vector<float>   *mom_ctau;
   vector<int>     *mom_dupl;
+  vector<float>   *genpar_t;
   vector<int>     *jet_nconst;
   vector<float>   *jet_avg_t;
   vector<float>   *jet_smear_30_t;
   vector<float>   *jet_smear_50_t;
   vector<float>   *jet_smear_70_t;
   vector<float>   *jet_smear_180_t;
+  vector<float>   *jet_smear_500_t;
   vector<float>   *jet_pt;
   vector<float>   *jet_alpha_PV;
   vector<float>   *jet_theta_2D;
+  vector<float>   *genjet_alpha_PV;
+  vector<float>   *genjet_theta_2D;
 
   // List of branches
   TBranch        *b_sample;   //!
@@ -154,6 +178,10 @@ private:
   TBranch        *b_event;   //!
   TBranch        *b_weight;   //!
   TBranch        *b_ngenjets;   //!
+  TBranch        *b_genjet0_nconst;   //!
+  TBranch        *b_genjet1_nconst;   //!
+  TBranch        *b_genjet2_nconst;   //!
+  TBranch        *b_genjet3_nconst;   //!
   TBranch        *b_genjet_pt;   //!
   TBranch        *b_genjet_e;   //!
   TBranch        *b_genjet_eta;   //!
@@ -168,24 +196,36 @@ private:
   TBranch        *b_genjet0_const_st;   //!
   TBranch        *b_genjet0_const_id;   //!
   TBranch        *b_genjet0_const_pt;   //!
+  TBranch        *b_genjet0_const_pv;   //!
+  TBranch        *b_genjet0_const_theta;   //!
+  TBranch        *b_genjet0_const_mtheta;   //!
   TBranch        *b_genjet0_const_vx;   //!
   TBranch        *b_genjet0_const_vy;   //!
   TBranch        *b_genjet0_const_vz;   //!
   TBranch        *b_genjet1_const_st;   //!
   TBranch        *b_genjet1_const_id;   //!
   TBranch        *b_genjet1_const_pt;   //!
+  TBranch        *b_genjet1_const_pv;   //!
+  TBranch        *b_genjet1_const_theta;   //!
+  TBranch        *b_genjet1_const_mtheta;   //!
   TBranch        *b_genjet1_const_vx;   //!
   TBranch        *b_genjet1_const_vy;   //!
   TBranch        *b_genjet1_const_vz;   //!
   TBranch        *b_genjet2_const_st;   //!
   TBranch        *b_genjet2_const_id;   //!
   TBranch        *b_genjet2_const_pt;   //!
+  TBranch        *b_genjet2_const_pv;   //!
+  TBranch        *b_genjet2_const_theta;   //!
+  TBranch        *b_genjet2_const_mtheta;   //!
   TBranch        *b_genjet2_const_vx;   //!
   TBranch        *b_genjet2_const_vy;   //!
   TBranch        *b_genjet2_const_vz;   //!
   TBranch        *b_genjet3_const_st;   //!
   TBranch        *b_genjet3_const_id;   //!
   TBranch        *b_genjet3_const_pt;   //!
+  TBranch        *b_genjet3_const_pv;   //!
+  TBranch        *b_genjet3_const_theta;   //!
+  TBranch        *b_genjet3_const_mtheta;   //!
   TBranch        *b_genjet3_const_vx;   //!
   TBranch        *b_genjet3_const_vy;   //!
   TBranch        *b_genjet3_const_vz;   //!
@@ -207,6 +247,10 @@ private:
   TBranch        *b_genpar_match_q2;   //!
   TBranch        *b_genpar_match_q3;   //!
   TBranch        *b_genpar_match_q4;   //!
+  TBranch        *b_genpar_dv1;   //!
+  TBranch        *b_genpar_dv2;   //!
+  TBranch        *b_genpar_dv3;   //!
+  TBranch        *b_genpar_dv4;   //!
   TBranch        *b_genpar_lo;   //!
   TBranch        *b_genpar_la;   //!
   TBranch        *b_genpar_loline;   //!
@@ -237,15 +281,19 @@ private:
   TBranch        *b_mom_Lxyz;   //!
   TBranch        *b_mom_ctau;   //!
   TBranch        *b_mom_dupl;   //!
+  TBranch        *b_genpar_t;   //!
   TBranch        *b_jet_nconst;   //!
   TBranch        *b_jet_avg_t;   //!
   TBranch        *b_jet_smear_30_t;   //!
   TBranch        *b_jet_smear_50_t;   //!
   TBranch        *b_jet_smear_70_t;   //!
   TBranch        *b_jet_smear_180_t;   //!
+  TBranch        *b_jet_smear_500_t;   //!
   TBranch        *b_jet_pt;   //!
   TBranch        *b_jet_alpha_PV;   //!
   TBranch        *b_jet_theta_2D;   //!
+  TBranch        *b_genjet_alpha_PV;   //!
+  TBranch        *b_genjet_theta_2D;   //!
 
 
 };

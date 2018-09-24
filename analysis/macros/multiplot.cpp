@@ -87,9 +87,9 @@ void multiplot::setupeffplots(unsigned int i)
   c->cd();
 
   // setup legend
-  TLegend * l = new TLegend(0.5,0.7,0.9,0.9,NULL,"brNDC");
-  l->SetLineColor(1);
-  l->SetLineStyle(1);
+  TLegend * l = new TLegend(0.46,0.66,0.86,0.86,NULL,"brNDC");
+  l->SetLineColor(0);
+  l->SetLineStyle(0);
   l->SetFillColor(0);
   l->SetFillStyle(0);
 
@@ -188,26 +188,11 @@ void multiplot::setupcuts()
 {
 
   cuts.resize(nh);
-  // cuts[0] are for jet t plots
-  cuts[0].push_back(0.00);
-  cuts[0].push_back(0.25);
-  cuts[0].push_back(0.50);
-  cuts[0].push_back(0.75);
-  cuts[0].push_back(1.00);
-  cuts[0].push_back(1.25);
-  cuts[0].push_back(1.50);
-  cuts[0].push_back(1.75);
-  cuts[0].push_back(2.00);
-  // cuts[1] are for unmatch t plots
-  cuts[1].push_back(0.00);
-  cuts[1].push_back(0.25);
-  cuts[1].push_back(0.50);
-  cuts[1].push_back(0.75);
-  cuts[1].push_back(1.00);
-  cuts[1].push_back(1.25);
-  cuts[1].push_back(1.50);
-  cuts[1].push_back(1.75);
-  cuts[1].push_back(2.00);
+
+  for (unsigned int i = 0; i < 21; i++){
+    cuts[0].push_back(i*0.1); // cuts[0] are for jet t plots
+    cuts[1].push_back(i*0.1); // cuts[1] are for unmatch t plots
+  }
 
   for (unsigned int i = 0; i < nh; i++){
     ncuts.push_back(cuts[i].size());
@@ -226,12 +211,14 @@ void multiplot::setuphistos()
   hist[0].push_back("jet_t_smear50");
   hist[0].push_back("jet_t_smear70");
   hist[0].push_back("jet_t_smear180");
+  hist[0].push_back("jet_t_smear500");
   // hist[1] are unmatched t plots
   hist[1].push_back("unmatch_t");
   hist[1].push_back("unmatch_t_smear30");
   hist[1].push_back("unmatch_t_smear50");
   hist[1].push_back("unmatch_t_smear70");
   hist[1].push_back("unmatch_t_smear180");
+  hist[1].push_back("unmatch_t_smear500");
 
   for (unsigned int i = 0; i < nh; i++){
     nsub.push_back(hist[i].size());
@@ -242,11 +229,13 @@ void multiplot::setuphistos()
   colors["jet_t_smear50"]	= kTeal;
   colors["jet_t_smear70"]	= kGreen;
   colors["jet_t_smear180"]	= kRed;
+  colors["jet_t_smear500"]	= kOrange;
   colors["unmatch_t"] 		= kBlack;
   colors["unmatch_t_smear30"]	= kMagenta;
   colors["unmatch_t_smear50"]	= kTeal;
   colors["unmatch_t_smear70"]	= kGreen;
   colors["unmatch_t_smear180"]	= kRed;
+  colors["unmatch_t_smear500"]	= kOrange;
 
 }// end setuphistos
 

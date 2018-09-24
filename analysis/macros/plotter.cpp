@@ -24,12 +24,13 @@ plotter::~plotter()
 void plotter::histos( TH1map & map , TH2map & map2){
 
   // 1d histos
-  if (ctau=="0mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
-  if (ctau=="1mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
-  if (ctau=="10mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
-  if (ctau=="100mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,50,"LL particle c#tau [cm]","");
-  if (ctau=="1000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,500,"LL particle c#tau [cm]","");
-  if (ctau=="10000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",5000,0,5000,"LL particle c#tau [cm]","");
+  map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",2000,0,2000,"LL particle c#tau [cm]","");
+  //if (ctau=="0mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
+  //if (ctau=="1mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
+  //if (ctau=="10mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
+  //if (ctau=="100mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,50,"LL particle c#tau [cm]","");
+  //if (ctau=="1000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,500,"LL particle c#tau [cm]","");
+  //if (ctau=="10000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",5000,0,5000,"LL particle c#tau [cm]","");
   map["LL_beta"]		= MakeTH1FPlot("LL_beta","",100,0,1,"LL particle #beta","");
   map["particle_dxy"]		= MakeTH1FPlot("particle_dxy","",100,0,100,"d_{xy} [cm]","");
   map["particle_dxyz"]		= MakeTH1FPlot("particle_dxyz","",100,0,100,"d_{xyz} [cm]","");
@@ -44,12 +45,18 @@ void plotter::histos( TH1map & map , TH2map & map2){
   map["jet_t_smear50"]		= MakeTH1FPlot("jet_t_smear50","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear70"]		= MakeTH1FPlot("jet_t_smear70","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear180"] 	= MakeTH1FPlot("jet_t_smear180","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_smear500"] 	= MakeTH1FPlot("jet_t_smear500","",150,-5,10,"Jet time [ns]","");
   map["unmatch_beta"]		= MakeTH1FPlot("unmatch_beta","",100,0,1,"Unmatched particle #beta","");
   map["unmatch_t"]		= MakeTH1FPlot("unmatch_t","",150,-5,10,"Unmatched particle time [ns]","");
   map["unmatch_t_smear30"]	= MakeTH1FPlot("unmatch_t_smear30","",150,-5,10,"Unmatched particle time [ns]","");
   map["unmatch_t_smear50"]	= MakeTH1FPlot("unmatch_t_smear50","",150,-5,10,"Unmatched particle time [ns]","");
   map["unmatch_t_smear70"]	= MakeTH1FPlot("unmatch_t_smear70","",150,-5,10,"Unmatched particle time [ns]","");
   map["unmatch_t_smear180"]	= MakeTH1FPlot("unmatch_t_smear180","",150,-5,10,"Unmatched particle time [ns]","");
+  map["unmatch_t_smear500"]	= MakeTH1FPlot("unmatch_t_smear500","",150,-5,10,"Unmatched particle time [ns]","");
+  map["genjet_match_alpha"]	= MakeTH1FPlot("genjet_match_alpha","",100,0,1,"Jet #alpha","");
+  map["genjet_match_theta"]	= MakeTH1FPlot("genjet_match_theta","",70,-5,2,"Jet #theta_{2D}","");
+  map["genjet_unmatch_alpha"]	= MakeTH1FPlot("genjet_unmatch_alpha","",100,0,1,"Jet #alpha","");
+  map["genjet_unmatch_theta"]	= MakeTH1FPlot("genjet_unmatch_theta","",70,-5,2,"Jet #theta_{2D}","");
 
   //// 2d histos
   //map2["tX1_tX2"]		= MakeTH2FPlot("tX1_tX2","",150,-5,10,150,-5,10,"Time jets from X1 [ns]","Time jets from X2 [ns]");
@@ -79,6 +86,20 @@ void plotter::go(){
        if ((*mom_dupl)[gm]==1) continue; // only plot mom once
        h1map["LL_beta"]->Fill((*mom_beta)[gm]);          // mom beta
        h1map["LL_cTau"]->Fill((*mom_ctau)[gm]);          // mom ctau
+     }
+
+     // draw gen jet information
+     for (unsigned int gj = 0; gj < 4; gj++){
+       if ( std::fabs((*genjet_eta)[gj]) > 1.5 ) continue; // keep only jets in barrel
+
+       if ( (*genjet_match)[gj]==1 ){ // jet matches a LL particle
+         h1map["genjet_match_alpha"]->Fill((*genjet_alpha_PV)[gj]);
+         h1map["genjet_match_theta"]->Fill((*genjet_theta_2D)[gj]);
+       }
+       else { // jet does not match a LL particle
+         h1map["genjet_unmatch_alpha"]->Fill((*genjet_alpha_PV)[gj]);
+         h1map["genjet_unmatch_theta"]->Fill((*genjet_theta_2D)[gj]);
+       }
      }
 
      // draw constituent information
@@ -118,6 +139,7 @@ void plotter::go(){
              h1map["unmatch_t_smear50"]->Fill(unmatch_t*smearVal(0.05));
              h1map["unmatch_t_smear70"]->Fill(unmatch_t*smearVal(0.07));
              h1map["unmatch_t_smear180"]->Fill(unmatch_t*smearVal(0.18));
+             h1map["unmatch_t_smear500"]->Fill(unmatch_t*smearVal(0.50));
          }// end unmatched conditional
 
      }// end loop over genparticles 
@@ -129,10 +151,11 @@ void plotter::go(){
          h1map["jet_alpha"]->Fill((*jet_alpha_PV)[i]);         // alpha PV of each jet
          h1map["jet_theta2D"]->Fill((*jet_theta_2D)[i]);       // theta 2D of each jet
          h1map["jet_t"]->Fill((*jet_avg_t)[i]);                // jet (averaged constituent) timing
-         h1map["jet_t_smear30"]->Fill((*jet_smear_30_t)[i]);   // smeared 30ns histos
-         h1map["jet_t_smear50"]->Fill((*jet_smear_50_t)[i]);   // smeared 50ns histos
-         h1map["jet_t_smear70"]->Fill((*jet_smear_70_t)[i]);   // smeared 70ns histos
-         h1map["jet_t_smear180"]->Fill((*jet_smear_180_t)[i]); // smeared 180ns histos
+         h1map["jet_t_smear30"]->Fill((*jet_smear_30_t)[i]);   // smeared 30ps histos
+         h1map["jet_t_smear50"]->Fill((*jet_smear_50_t)[i]);   // smeared 50ps histos
+         h1map["jet_t_smear70"]->Fill((*jet_smear_70_t)[i]);   // smeared 70ps histos
+         h1map["jet_t_smear180"]->Fill((*jet_smear_180_t)[i]); // smeared 180ps histos
+         h1map["jet_t_smear500"]->Fill((*jet_smear_500_t)[i]); // smeared 500ps histos
          if ((*jet_avg_t)[i] > max_jet_t){ h1map["max_jet_t"]->Fill(max_jet_t); max_jet_t = (*jet_avg_t)[i]; } // max avg jet time
      }
 
@@ -289,24 +312,36 @@ void plotter::setuptreebranches()
    genjet0_const_st = 0;
    genjet0_const_id = 0;
    genjet0_const_pt = 0;
+   genjet0_const_pv = 0;
+   genjet0_const_theta = 0;
+   genjet0_const_mtheta = 0;
    genjet0_const_vx = 0;
    genjet0_const_vy = 0;
    genjet0_const_vz = 0;
    genjet1_const_st = 0;
    genjet1_const_id = 0;
    genjet1_const_pt = 0;
+   genjet1_const_pv = 0;
+   genjet1_const_theta = 0;
+   genjet1_const_mtheta = 0;
    genjet1_const_vx = 0;
    genjet1_const_vy = 0;
    genjet1_const_vz = 0;
    genjet2_const_st = 0;
    genjet2_const_id = 0;
    genjet2_const_pt = 0;
+   genjet2_const_pv = 0;
+   genjet2_const_theta = 0;
+   genjet2_const_mtheta = 0;
    genjet2_const_vx = 0;
    genjet2_const_vy = 0;
    genjet2_const_vz = 0;
    genjet3_const_st = 0;
    genjet3_const_id = 0;
    genjet3_const_pt = 0;
+   genjet3_const_pv = 0;
+   genjet3_const_theta = 0;
+   genjet3_const_mtheta = 0;
    genjet3_const_vx = 0;
    genjet3_const_vy = 0;
    genjet3_const_vz = 0;
@@ -327,6 +362,10 @@ void plotter::setuptreebranches()
    genpar_match_q2 = 0;
    genpar_match_q3 = 0;
    genpar_match_q4 = 0;
+   genpar_dv1 = 0;
+   genpar_dv2 = 0;
+   genpar_dv3 = 0;
+   genpar_dv4 = 0;
    genpar_lo = 0;
    genpar_la = 0;
    genpar_loline = 0;
@@ -356,15 +395,19 @@ void plotter::setuptreebranches()
    mom_Lxyz = 0;
    mom_ctau = 0;
    mom_dupl = 0;
+   genpar_t = 0;
    jet_nconst = 0;
    jet_avg_t = 0;
    jet_smear_30_t = 0;
    jet_smear_50_t = 0;
    jet_smear_70_t = 0;
    jet_smear_180_t = 0;
+   jet_smear_500_t = 0;
    jet_pt = 0;
    jet_alpha_PV = 0;
    jet_theta_2D = 0;
+   genjet_alpha_PV = 0;
+   genjet_theta_2D = 0;
   
    // set branches
    t->SetBranchAddress("sample", &sample, &b_sample);
@@ -373,6 +416,10 @@ void plotter::setuptreebranches()
    t->SetBranchAddress("event", &event, &b_event);
    t->SetBranchAddress("weight", &weight, &b_weight);
    t->SetBranchAddress("ngenjets", &ngenjets, &b_ngenjets);
+   t->SetBranchAddress("genjet0_nconst", &genjet0_nconst, &b_genjet0_nconst);
+   t->SetBranchAddress("genjet1_nconst", &genjet1_nconst, &b_genjet1_nconst);
+   t->SetBranchAddress("genjet2_nconst", &genjet2_nconst, &b_genjet2_nconst);
+   t->SetBranchAddress("genjet3_nconst", &genjet3_nconst, &b_genjet3_nconst);
    t->SetBranchAddress("genjet_pt", &genjet_pt, &b_genjet_pt);
    t->SetBranchAddress("genjet_e", &genjet_e, &b_genjet_e);
    t->SetBranchAddress("genjet_eta", &genjet_eta, &b_genjet_eta);
@@ -387,24 +434,36 @@ void plotter::setuptreebranches()
    t->SetBranchAddress("genjet0_const_st", &genjet0_const_st, &b_genjet0_const_st);
    t->SetBranchAddress("genjet0_const_id", &genjet0_const_id, &b_genjet0_const_id);
    t->SetBranchAddress("genjet0_const_pt", &genjet0_const_pt, &b_genjet0_const_pt);
+   t->SetBranchAddress("genjet0_const_pv", &genjet0_const_pv, &b_genjet0_const_pv);
+   t->SetBranchAddress("genjet0_const_theta", &genjet0_const_theta, &b_genjet0_const_theta);
+   t->SetBranchAddress("genjet0_const_mtheta", &genjet0_const_mtheta, &b_genjet0_const_mtheta);
    t->SetBranchAddress("genjet0_const_vx", &genjet0_const_vx, &b_genjet0_const_vx);
    t->SetBranchAddress("genjet0_const_vy", &genjet0_const_vy, &b_genjet0_const_vy);
    t->SetBranchAddress("genjet0_const_vz", &genjet0_const_vz, &b_genjet0_const_vz);
    t->SetBranchAddress("genjet1_const_st", &genjet1_const_st, &b_genjet1_const_st);
    t->SetBranchAddress("genjet1_const_id", &genjet1_const_id, &b_genjet1_const_id);
    t->SetBranchAddress("genjet1_const_pt", &genjet1_const_pt, &b_genjet1_const_pt);
+   t->SetBranchAddress("genjet1_const_pv", &genjet1_const_pv, &b_genjet1_const_pv);
+   t->SetBranchAddress("genjet1_const_theta", &genjet1_const_theta, &b_genjet1_const_theta);
+   t->SetBranchAddress("genjet1_const_mtheta", &genjet1_const_mtheta, &b_genjet1_const_mtheta);
    t->SetBranchAddress("genjet1_const_vx", &genjet1_const_vx, &b_genjet1_const_vx);
    t->SetBranchAddress("genjet1_const_vy", &genjet1_const_vy, &b_genjet1_const_vy);
    t->SetBranchAddress("genjet1_const_vz", &genjet1_const_vz, &b_genjet1_const_vz);
    t->SetBranchAddress("genjet2_const_st", &genjet2_const_st, &b_genjet2_const_st);
    t->SetBranchAddress("genjet2_const_id", &genjet2_const_id, &b_genjet2_const_id);
    t->SetBranchAddress("genjet2_const_pt", &genjet2_const_pt, &b_genjet2_const_pt);
+   t->SetBranchAddress("genjet2_const_pv", &genjet2_const_pv, &b_genjet2_const_pv);
+   t->SetBranchAddress("genjet2_const_theta", &genjet2_const_theta, &b_genjet2_const_theta);
+   t->SetBranchAddress("genjet2_const_mtheta", &genjet2_const_mtheta, &b_genjet2_const_mtheta);
    t->SetBranchAddress("genjet2_const_vx", &genjet2_const_vx, &b_genjet2_const_vx);
    t->SetBranchAddress("genjet2_const_vy", &genjet2_const_vy, &b_genjet2_const_vy);
    t->SetBranchAddress("genjet2_const_vz", &genjet2_const_vz, &b_genjet2_const_vz);
    t->SetBranchAddress("genjet3_const_st", &genjet3_const_st, &b_genjet3_const_st);
    t->SetBranchAddress("genjet3_const_id", &genjet3_const_id, &b_genjet3_const_id);
    t->SetBranchAddress("genjet3_const_pt", &genjet3_const_pt, &b_genjet3_const_pt);
+   t->SetBranchAddress("genjet3_const_pv", &genjet3_const_pv, &b_genjet3_const_pv);
+   t->SetBranchAddress("genjet3_const_theta", &genjet3_const_theta, &b_genjet3_const_theta);
+   t->SetBranchAddress("genjet3_const_mtheta", &genjet3_const_mtheta, &b_genjet3_const_mtheta);
    t->SetBranchAddress("genjet3_const_vx", &genjet3_const_vx, &b_genjet3_const_vx);
    t->SetBranchAddress("genjet3_const_vy", &genjet3_const_vy, &b_genjet3_const_vy);
    t->SetBranchAddress("genjet3_const_vz", &genjet3_const_vz, &b_genjet3_const_vz);
@@ -426,6 +485,10 @@ void plotter::setuptreebranches()
    t->SetBranchAddress("genpar_match_q2", &genpar_match_q2, &b_genpar_match_q2);
    t->SetBranchAddress("genpar_match_q3", &genpar_match_q3, &b_genpar_match_q3);
    t->SetBranchAddress("genpar_match_q4", &genpar_match_q4, &b_genpar_match_q4);
+   t->SetBranchAddress("genpar_dv1", &genpar_dv1, &b_genpar_dv1);
+   t->SetBranchAddress("genpar_dv2", &genpar_dv2, &b_genpar_dv2);
+   t->SetBranchAddress("genpar_dv3", &genpar_dv3, &b_genpar_dv3);
+   t->SetBranchAddress("genpar_dv4", &genpar_dv4, &b_genpar_dv4);
    t->SetBranchAddress("genpar_lo", &genpar_lo, &b_genpar_lo);
    t->SetBranchAddress("genpar_la", &genpar_la, &b_genpar_la);
    t->SetBranchAddress("genpar_loline", &genpar_loline, &b_genpar_loline);
@@ -456,14 +519,18 @@ void plotter::setuptreebranches()
    t->SetBranchAddress("mom_Lxyz", &mom_Lxyz, &b_mom_Lxyz);
    t->SetBranchAddress("mom_ctau", &mom_ctau, &b_mom_ctau);
    t->SetBranchAddress("mom_dupl", &mom_dupl, &b_mom_dupl);
+   t->SetBranchAddress("genpar_t", &genpar_t, &b_genpar_t);
    t->SetBranchAddress("jet_nconst", &jet_nconst, &b_jet_nconst);
    t->SetBranchAddress("jet_avg_t", &jet_avg_t, &b_jet_avg_t);
    t->SetBranchAddress("jet_smear_30_t", &jet_smear_30_t, &b_jet_smear_30_t);
    t->SetBranchAddress("jet_smear_50_t", &jet_smear_50_t, &b_jet_smear_50_t);
    t->SetBranchAddress("jet_smear_70_t", &jet_smear_70_t, &b_jet_smear_70_t);
    t->SetBranchAddress("jet_smear_180_t", &jet_smear_180_t, &b_jet_smear_180_t);
+   t->SetBranchAddress("jet_smear_500_t", &jet_smear_500_t, &b_jet_smear_500_t);
    t->SetBranchAddress("jet_pt", &jet_pt, &b_jet_pt);
    t->SetBranchAddress("jet_alpha_PV", &jet_alpha_PV, &b_jet_alpha_PV);
    t->SetBranchAddress("jet_theta_2D", &jet_theta_2D, &b_jet_theta_2D);
+   t->SetBranchAddress("genjet_alpha_PV", &genjet_alpha_PV, &b_genjet_alpha_PV);
+   t->SetBranchAddress("genjet_theta_2D", &genjet_theta_2D, &b_genjet_theta_2D);
 
 }

@@ -79,8 +79,8 @@ void overlay::drawplots()
     for (unsigned int j = 0; j < nfiles; j++){
       ohistos[i][j]->SetLineColor(colors[ctau[j]]);
       if (j==0){
-        ohistos[i][j]->SetMaximum(max_val[i]*10);
-        ohistos[i][j]->Draw("AXIS");
+        //ohistos[i][j]->SetMaximum(max_val[i]*10);
+        ohistos[i][j]->Draw("HIST");
       }
       else ohistos[i][j]->Draw("HIST SAME");
       leg[i]->AddEntry(ohistos[i][j],TString::Format("%s",ctau[j].Data()),"l");
@@ -135,6 +135,9 @@ void overlay::setupplots()
   hnames.push_back("jet_theta2D");
   hnames.push_back("jet_t");
   hnames.push_back("jet_t_smear30");
+  hnames.push_back("particle_dxy");
+  hnames.push_back("particle_dxyz");
+  hnames.push_back("LL_cTau");
   nh = hnames.size();
 
 }// end setupplots
