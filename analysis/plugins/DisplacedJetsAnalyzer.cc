@@ -53,6 +53,10 @@ struct tree_struc_{
   long unsigned int		event;
   float				weight;
   int				ngenjets;
+  int				genjet0_nconst;
+  int				genjet1_nconst;
+  int				genjet2_nconst;
+  int				genjet3_nconst;
   std::vector<float>            genjet_pt;
   std::vector<float>            genjet_e;
   std::vector<float>            genjet_eta;
@@ -81,24 +85,36 @@ struct tree_struc_{
   std::vector<float>		genjet0_const_st;
   std::vector<float>		genjet0_const_id;
   std::vector<float>		genjet0_const_pt;
+  std::vector<float>		genjet0_const_pv;
+  std::vector<float>		genjet0_const_theta;
+  std::vector<float>		genjet0_const_mtheta;
   std::vector<float>		genjet0_const_vx;
   std::vector<float>		genjet0_const_vy;
   std::vector<float>		genjet0_const_vz;
   std::vector<float>		genjet1_const_st;
   std::vector<float>		genjet1_const_id;
   std::vector<float>		genjet1_const_pt;
+  std::vector<float>		genjet1_const_pv;
+  std::vector<float>		genjet1_const_theta;
+  std::vector<float>		genjet1_const_mtheta;
   std::vector<float>		genjet1_const_vx;
   std::vector<float>		genjet1_const_vy;
   std::vector<float>		genjet1_const_vz;
   std::vector<float>		genjet2_const_st;
   std::vector<float>		genjet2_const_id;
   std::vector<float>		genjet2_const_pt;
+  std::vector<float>		genjet2_const_pv;
+  std::vector<float>		genjet2_const_theta;
+  std::vector<float>		genjet2_const_mtheta;
   std::vector<float>		genjet2_const_vx;
   std::vector<float>		genjet2_const_vy;
   std::vector<float>		genjet2_const_vz;
   std::vector<float>		genjet3_const_st;
   std::vector<float>		genjet3_const_id;
   std::vector<float>		genjet3_const_pt;
+  std::vector<float>		genjet3_const_pv;
+  std::vector<float>		genjet3_const_theta;
+  std::vector<float>		genjet3_const_mtheta;
   std::vector<float>		genjet3_const_vx;
   std::vector<float>		genjet3_const_vy;
   std::vector<float>		genjet3_const_vz;
@@ -265,29 +281,45 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<float>	genjet_vz;
 
   // --- genjet constituent info
+  int genjet0_nconst = 0;
+  int genjet1_nconst = 0;
+  int genjet2_nconst = 0;
+  int genjet3_nconst = 0;
   std::vector<int>  	genjet_i;
   std::vector<int>  	genjet_match;
   std::vector<float>	genjet0_const_st;
   std::vector<float>	genjet0_const_id;
   std::vector<float>	genjet0_const_pt;
+  std::vector<float>	genjet0_const_pv;
+  std::vector<float>	genjet0_const_theta;
+  std::vector<float>	genjet0_const_mtheta;
   std::vector<float>	genjet0_const_vx;
   std::vector<float>	genjet0_const_vy;
   std::vector<float>	genjet0_const_vz;
   std::vector<float>	genjet1_const_st;
   std::vector<float>	genjet1_const_id;
   std::vector<float>	genjet1_const_pt;
+  std::vector<float>	genjet1_const_pv;
+  std::vector<float>	genjet1_const_theta;
+  std::vector<float>	genjet1_const_mtheta;
   std::vector<float>	genjet1_const_vx;
   std::vector<float>	genjet1_const_vy;
   std::vector<float>	genjet1_const_vz;
   std::vector<float>	genjet2_const_st;
   std::vector<float>	genjet2_const_id;
   std::vector<float>	genjet2_const_pt;
+  std::vector<float>	genjet2_const_pv;
+  std::vector<float>	genjet2_const_theta;
+  std::vector<float>	genjet2_const_mtheta;
   std::vector<float>	genjet2_const_vx;
   std::vector<float>	genjet2_const_vy;
   std::vector<float>	genjet2_const_vz;
   std::vector<float>	genjet3_const_st;
   std::vector<float>	genjet3_const_id;
   std::vector<float>	genjet3_const_pt;
+  std::vector<float>	genjet3_const_pv;
+  std::vector<float>	genjet3_const_theta;
+  std::vector<float>	genjet3_const_mtheta;
   std::vector<float>	genjet3_const_vx;
   std::vector<float>	genjet3_const_vy;
   std::vector<float>	genjet3_const_vz;
@@ -368,7 +400,8 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       std::vector<const reco::GenParticle*> genjet_const = genjet_iter.getGenConstituents();
       genjet_nconst.push_back(genjet_const.size()); 
 
-      int match_LL = 0; // does a constituent come from the hard interaction
+      int match_LL = 0;   // does a constituent come from the hard interaction 
+      float const_dv = 0; // dxyz distance between constituent and mother
 
       // manually get jet constituents 
       if (genparticles.isValid()){ // make sure have genparticles collection
@@ -384,35 +417,72 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
           // check if there is a LL particle matching to the jet
           if (genpar_iter.status()==23) match_LL = 1;
 
+          // pick up const vertex (ie. SV) and compare with mom vertex (ie. PV)
+          float const_vx = genpar_iter.vertex().x();
+          float const_vy = genpar_iter.vertex().y();
+          float const_vz = genpar_iter.vertex().z();
+          float const_mx = 0;
+          float const_my = 0;
+          float const_mz = 0;
+          float mom_theta = 0;
+          std::vector< const reco::Candidate * > mother;
+          mother.push_back(genpar_iter.mother(0));
+          for (const auto & mom : mother ){
+            const_mx = mom->vx();
+            const_my = mom->vy();
+            const_mz = mom->vz();
+            mom_theta = mom->theta();
+          }
+          float const_dx = const_vx - const_mx;
+          float const_dy = const_vy - const_my;
+          float const_dz = const_vz - const_mz;
+          const_dv = std::sqrt(const_dx*const_dx + const_dy*const_dy + const_dz*const_dz);
+
           // save genparticle constituents associated with each jet
           if (jetiter==0){
+            genjet0_nconst++;
             genjet0_const_st.push_back(genpar_iter.status());
             genjet0_const_id.push_back(genpar_iter.pdgId());
             genjet0_const_pt.push_back(genpar_iter.pt());
+            genjet0_const_pv.push_back(const_dv);
+            genjet0_const_theta.push_back(genpar_iter.theta());
+            genjet0_const_mtheta.push_back(mom_theta);
             genjet0_const_vx.push_back(genpar_iter.vertex().x());
             genjet0_const_vy.push_back(genpar_iter.vertex().y());
-            genjet0_const_vz.push_back(genpar_iter.vertex().z());
+            genjet0_const_vz.push_back(genpar_iter.vertex().z()); 
           }
           if (jetiter==1){
+            genjet1_nconst++;
             genjet1_const_st.push_back(genpar_iter.status());
             genjet1_const_id.push_back(genpar_iter.pdgId());
             genjet1_const_pt.push_back(genpar_iter.pt());
+            genjet1_const_pv.push_back(const_dv);
+            genjet1_const_theta.push_back(genpar_iter.theta());
+            genjet1_const_mtheta.push_back(mom_theta);
             genjet1_const_vx.push_back(genpar_iter.vertex().x());
             genjet1_const_vy.push_back(genpar_iter.vertex().y());
             genjet1_const_vz.push_back(genpar_iter.vertex().z());
           }
           if (jetiter==2){
+            genjet2_nconst++;
             genjet2_const_st.push_back(genpar_iter.status());
             genjet2_const_id.push_back(genpar_iter.pdgId());
             genjet2_const_pt.push_back(genpar_iter.pt());
+            genjet2_const_pv.push_back(const_dv);
+            genjet2_const_mtheta.push_back(mom_theta);
+            genjet2_const_theta.push_back(genpar_iter.theta());
             genjet2_const_vx.push_back(genpar_iter.vertex().x());
             genjet2_const_vy.push_back(genpar_iter.vertex().y());
             genjet2_const_vz.push_back(genpar_iter.vertex().z());
           }
           if (jetiter==3){
+            genjet3_nconst++;
             genjet3_const_st.push_back(genpar_iter.status());
             genjet3_const_id.push_back(genpar_iter.pdgId());
             genjet3_const_pt.push_back(genpar_iter.pt());
+            genjet3_const_pv.push_back(const_dv);
+            genjet3_const_theta.push_back(genpar_iter.theta());
+            genjet3_const_mtheta.push_back(mom_theta);
             genjet3_const_vx.push_back(genpar_iter.vertex().x());
             genjet3_const_vy.push_back(genpar_iter.vertex().y());
             genjet3_const_vz.push_back(genpar_iter.vertex().z());
@@ -651,10 +721,10 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       dR3 = deltaR(q3_eta,q3_phi,genpar_iter.eta(),genpar_iter.phi()); 
       dR4 = deltaR(q4_eta,q4_phi,genpar_iter.eta(),genpar_iter.phi());
       // vertex matching
-      dv1 = std::fabs(q1_vx-vx)+std::fabs(q1_vy-vy)+std::fabs(q1_vz-vz);    
-      dv2 = std::fabs(q2_vx-vx)+std::fabs(q2_vy-vy)+std::fabs(q2_vz-vz);    
-      dv3 = std::fabs(q3_vx-vx)+std::fabs(q3_vy-vy)+std::fabs(q3_vz-vz);    
-      dv4 = std::fabs(q4_vx-vx)+std::fabs(q4_vy-vy)+std::fabs(q4_vz-vz);    
+      dv1 = std::sqrt( (q1_vx-vx)*(q1_vx-vx) + (q1_vy-vy)*(q1_vy-vy) + (q1_vz-vz)*(q1_vz-vz) );    
+      dv2 = std::sqrt( (q2_vx-vx)*(q2_vx-vx) + (q2_vy-vy)*(q2_vy-vy) + (q2_vz-vz)*(q2_vz-vz) );    
+      dv3 = std::sqrt( (q3_vx-vx)*(q3_vx-vx) + (q3_vy-vy)*(q3_vy-vy) + (q3_vz-vz)*(q3_vz-vz) );    
+      dv4 = std::sqrt( (q4_vx-vx)*(q4_vx-vx) + (q4_vy-vy)*(q4_vy-vy) + (q4_vz-vz)*(q4_vz-vz) );    
  
       if (q1_eta < 1.5 && dR1 < 0.4 && dv1 < 10) match1 = 1;
       if (q2_eta < 1.5 && dR2 < 0.4 && dv2 < 10) match2 = 1;
@@ -729,6 +799,10 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   tree_.event		= event;
   tree_.weight		= weight;
   tree_.ngenjets	= ngenjets;
+  tree_.genjet0_nconst	= genjet0_nconst;
+  tree_.genjet1_nconst	= genjet1_nconst;
+  tree_.genjet2_nconst	= genjet2_nconst;
+  tree_.genjet3_nconst	= genjet3_nconst;
   tree_.ngenpart        = ngenpart;
   tree_.nmothers	= nmothers;
 
@@ -749,6 +823,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genjet0_const_st.push_back(genjet0_const_st[i]);
     tree_.genjet0_const_id.push_back(genjet0_const_id[i]);
     tree_.genjet0_const_pt.push_back(genjet0_const_pt[i]);
+    tree_.genjet0_const_pv.push_back(genjet0_const_pv[i]);
+    tree_.genjet0_const_theta.push_back(genjet0_const_theta[i]);
+    tree_.genjet0_const_mtheta.push_back(genjet0_const_mtheta[i]);
     tree_.genjet0_const_vx.push_back(genjet0_const_vx[i]);
     tree_.genjet0_const_vy.push_back(genjet0_const_vy[i]);
     tree_.genjet0_const_vz.push_back(genjet0_const_vz[i]);
@@ -757,6 +834,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genjet1_const_st.push_back(genjet1_const_st[i]);
     tree_.genjet1_const_id.push_back(genjet1_const_id[i]);
     tree_.genjet1_const_pt.push_back(genjet1_const_pt[i]);
+    tree_.genjet1_const_pv.push_back(genjet1_const_pv[i]);
+    tree_.genjet1_const_theta.push_back(genjet1_const_theta[i]);
+    tree_.genjet1_const_mtheta.push_back(genjet1_const_mtheta[i]);
     tree_.genjet1_const_vx.push_back(genjet1_const_vx[i]);
     tree_.genjet1_const_vy.push_back(genjet1_const_vy[i]);
     tree_.genjet1_const_vz.push_back(genjet1_const_vz[i]);
@@ -765,6 +845,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genjet2_const_st.push_back(genjet2_const_st[i]);
     tree_.genjet2_const_id.push_back(genjet2_const_id[i]);
     tree_.genjet2_const_pt.push_back(genjet2_const_pt[i]);
+    tree_.genjet2_const_pv.push_back(genjet2_const_pv[i]);
+    tree_.genjet2_const_theta.push_back(genjet2_const_theta[i]);
+    tree_.genjet2_const_mtheta.push_back(genjet2_const_mtheta[i]);
     tree_.genjet2_const_vx.push_back(genjet2_const_vx[i]);
     tree_.genjet2_const_vy.push_back(genjet2_const_vy[i]);
     tree_.genjet2_const_vz.push_back(genjet2_const_vz[i]);
@@ -773,6 +856,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genjet3_const_st.push_back(genjet3_const_st[i]);
     tree_.genjet3_const_id.push_back(genjet3_const_id[i]);
     tree_.genjet3_const_pt.push_back(genjet3_const_pt[i]);
+    tree_.genjet3_const_pv.push_back(genjet3_const_pv[i]);
+    tree_.genjet3_const_theta.push_back(genjet3_const_theta[i]);
+    tree_.genjet3_const_mtheta.push_back(genjet3_const_mtheta[i]);
     tree_.genjet3_const_vx.push_back(genjet3_const_vx[i]);
     tree_.genjet3_const_vy.push_back(genjet3_const_vy[i]);
     tree_.genjet3_const_vz.push_back(genjet3_const_vz[i]);
@@ -879,6 +965,10 @@ void DisplacedJetsAnalyzer::beginJob()
 
   // gen jet stuff
   tree->Branch("ngenjets",		&tree_.ngenjets,		"ngenjets/I");
+  tree->Branch("genjet0_nconst",	&tree_.genjet0_nconst,		"genjet0_nconst/I");
+  tree->Branch("genjet1_nconst",	&tree_.genjet1_nconst,		"genjet1_nconst/I");
+  tree->Branch("genjet2_nconst",	&tree_.genjet2_nconst,		"genjet2_nconst/I");
+  tree->Branch("genjet3_nconst",	&tree_.genjet3_nconst,		"genjet3_nconst/I");
   tree->Branch("genjet_pt",     	&tree_.genjet_pt);
   tree->Branch("genjet_e",      	&tree_.genjet_e);
   tree->Branch("genjet_eta",		&tree_.genjet_eta);
@@ -895,24 +985,36 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("genjet0_const_st",	&tree_.genjet0_const_st);
   tree->Branch("genjet0_const_id",	&tree_.genjet0_const_id);
   tree->Branch("genjet0_const_pt",	&tree_.genjet0_const_pt);
+  tree->Branch("genjet0_const_pv",	&tree_.genjet0_const_pv);
+  tree->Branch("genjet0_const_theta",	&tree_.genjet0_const_theta);
+  tree->Branch("genjet0_const_mtheta",	&tree_.genjet0_const_mtheta);
   tree->Branch("genjet0_const_vx",	&tree_.genjet0_const_vx);
   tree->Branch("genjet0_const_vy",	&tree_.genjet0_const_vy);
   tree->Branch("genjet0_const_vz",	&tree_.genjet0_const_vz);
   tree->Branch("genjet1_const_st",	&tree_.genjet1_const_st);
   tree->Branch("genjet1_const_id",	&tree_.genjet1_const_id);
   tree->Branch("genjet1_const_pt",	&tree_.genjet1_const_pt);
+  tree->Branch("genjet1_const_pv",	&tree_.genjet1_const_pv);
+  tree->Branch("genjet1_const_theta",	&tree_.genjet1_const_theta);
+  tree->Branch("genjet1_const_mtheta",	&tree_.genjet1_const_mtheta);
   tree->Branch("genjet1_const_vx",	&tree_.genjet1_const_vx);
   tree->Branch("genjet1_const_vy",	&tree_.genjet1_const_vy);
   tree->Branch("genjet1_const_vz",	&tree_.genjet1_const_vz);
   tree->Branch("genjet2_const_st",	&tree_.genjet2_const_st);
   tree->Branch("genjet2_const_id",	&tree_.genjet2_const_id);
   tree->Branch("genjet2_const_pt",	&tree_.genjet2_const_pt);
+  tree->Branch("genjet2_const_pv",	&tree_.genjet2_const_pv);
+  tree->Branch("genjet2_const_theta",	&tree_.genjet2_const_theta);
+  tree->Branch("genjet2_const_mtheta",	&tree_.genjet2_const_mtheta);
   tree->Branch("genjet2_const_vx",	&tree_.genjet2_const_vx);
   tree->Branch("genjet2_const_vy",	&tree_.genjet2_const_vy);
   tree->Branch("genjet2_const_vz",	&tree_.genjet2_const_vz);
   tree->Branch("genjet3_const_st",	&tree_.genjet3_const_st);
   tree->Branch("genjet3_const_id",	&tree_.genjet3_const_id);
   tree->Branch("genjet3_const_pt",	&tree_.genjet3_const_pt);
+  tree->Branch("genjet3_const_pv",	&tree_.genjet3_const_pv);
+  tree->Branch("genjet3_const_theta",	&tree_.genjet3_const_theta);
+  tree->Branch("genjet3_const_mtheta",	&tree_.genjet3_const_mtheta);
   tree->Branch("genjet3_const_vx",	&tree_.genjet3_const_vx);
   tree->Branch("genjet3_const_vy",	&tree_.genjet3_const_vy);
   tree->Branch("genjet3_const_vz",	&tree_.genjet3_const_vz);
@@ -1034,6 +1136,10 @@ void DisplacedJetsAnalyzer::initTreeStructure()
   tree_.event		= 0.;
   tree_.weight		= 0.;
   tree_.ngenjets	= -500.;
+  tree_.genjet0_nconst	= -500.;
+  tree_.genjet1_nconst	= -500.;
+  tree_.genjet2_nconst	= -500.;
+  tree_.genjet3_nconst	= -500.;
   tree_.ngenpart	= -500.;
   tree_.nmothers	= -500.;
 }
@@ -1070,24 +1176,36 @@ void DisplacedJetsAnalyzer::clearVectors()
   tree_.genjet0_const_st.clear();
   tree_.genjet0_const_id.clear();
   tree_.genjet0_const_pt.clear();
+  tree_.genjet0_const_pv.clear();
+  tree_.genjet0_const_theta.clear();
+  tree_.genjet0_const_mtheta.clear();
   tree_.genjet0_const_vx.clear();
   tree_.genjet0_const_vy.clear();
   tree_.genjet0_const_vz.clear();
   tree_.genjet1_const_st.clear();
   tree_.genjet1_const_id.clear();
   tree_.genjet1_const_pt.clear();
+  tree_.genjet1_const_pv.clear();
+  tree_.genjet1_const_theta.clear();
+  tree_.genjet1_const_mtheta.clear();
   tree_.genjet1_const_vx.clear();
   tree_.genjet1_const_vy.clear();
   tree_.genjet1_const_vz.clear();
   tree_.genjet2_const_st.clear();
   tree_.genjet2_const_id.clear();
   tree_.genjet2_const_pt.clear();
+  tree_.genjet2_const_pv.clear();
+  tree_.genjet2_const_theta.clear();
+  tree_.genjet2_const_mtheta.clear();
   tree_.genjet2_const_vx.clear();
   tree_.genjet2_const_vy.clear();
   tree_.genjet2_const_vz.clear();
   tree_.genjet3_const_st.clear();
   tree_.genjet3_const_id.clear();
   tree_.genjet3_const_pt.clear();
+  tree_.genjet3_const_pv.clear();
+  tree_.genjet3_const_theta.clear();
+  tree_.genjet3_const_mtheta.clear();
   tree_.genjet3_const_vx.clear();
   tree_.genjet3_const_vy.clear();
   tree_.genjet3_const_vz.clear();
