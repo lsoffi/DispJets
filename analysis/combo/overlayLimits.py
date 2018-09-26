@@ -11,7 +11,7 @@ def run(opts):
   if opts.do_r2: channels.append("old")  # limits from runII analysis
 
   filepath = {}
-  filepath["new"] = "compare_files/plot_m100_r30_L2600.root"
+  filepath["new"] = "dispjets_jsons/plot_m50_r30_L2600.root"
   filepath["thr"] = "compare_files/data_lim_m50_theory.txt"
   filepath["old"] = "compare_files/data_lim_m50_L2600.txt"
 
@@ -52,7 +52,7 @@ def run(opts):
     tgraph[ch].SetLineWidth(2)
   tgraph["thr"].Draw("LA")
   tgraph["old"].Draw("L SAME") # limits at like 10^3
-  tgraph["new"].Draw("PE SAME")
+  tgraph["new"].Draw("L SAME")
 
   l = TLegend(0.5,0.6,0.85,0.85)
   l.SetFillStyle(0)
@@ -63,8 +63,8 @@ def run(opts):
   # save 
   suffix = ""
   if opts.suffix!="": suffix = "_"+opts.suffix 
-  c.SaveAs(opts.outdir+"limits_compare"+suffix+".png") 
   c.SaveAs(opts.outdir+"limits_compare"+suffix+".pdf") 
+  c.SaveAs(opts.outdir+"limits_compare"+suffix+".png") 
 
 def rescaleaxis(g,axis,scale):
     """This function rescales the x-axis on a TGraph."""
@@ -81,7 +81,7 @@ def init():
   # options
   parser = OptionParser("usage: %prog [options]")
   parser.add_option("-o","--outdir",action="store",type="string",
-                    default="",help="Output directory [default = %default]"), 
+                    default="~/www/Plots/DispJets/GenStudies/Limits/",help="Output directory [default = %default]"), 
   parser.add_option("--suffix",action="store",type="string",
                     default="",help="String for output plot name [default = %default]"),
   parser.add_option("--theory",action="store_true",dest="do_th",
