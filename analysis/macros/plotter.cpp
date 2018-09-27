@@ -41,11 +41,18 @@ void plotter::histos( TH1map & map , TH2map & map2){
   map["const_pt"]		= MakeTH1FPlot("const_pt","",100,0,100,"Jet constituent p_{T} [GeV]","");
   map["max_jet_t"]		= MakeTH1FPlot("max_jet_t","",150,-5,10,"Max jet time [ns]","");
   map["jet_t"]			= MakeTH1FPlot("jet_t","",150,-5,10,"Jet time [ns]",""); 
+  map["jet_t_smear0"]		= MakeTH1FPlot("jet_t_smear0","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear30"]		= MakeTH1FPlot("jet_t_smear30","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear50"]		= MakeTH1FPlot("jet_t_smear50","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear70"]		= MakeTH1FPlot("jet_t_smear70","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear180"] 	= MakeTH1FPlot("jet_t_smear180","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear500"] 	= MakeTH1FPlot("jet_t_smear500","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_diff0"]		= MakeTH1FPlot("jet_t_diff0","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
+  map["jet_t_diff30"]		= MakeTH1FPlot("jet_t_diff30","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
+  map["jet_t_diff50"]		= MakeTH1FPlot("jet_t_diff50","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
+  map["jet_t_diff70"]		= MakeTH1FPlot("jet_t_diff70","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
+  map["jet_t_diff180"]		= MakeTH1FPlot("jet_t_diff180","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
+  map["jet_t_diff500"]		= MakeTH1FPlot("jet_t_diff500","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
   map["unmatch_beta"]		= MakeTH1FPlot("unmatch_beta","",100,0,1,"Unmatched particle #beta","");
   map["unmatch_t"]		= MakeTH1FPlot("unmatch_t","",150,-5,10,"Unmatched particle time [ns]","");
   map["unmatch_t_smear30"]	= MakeTH1FPlot("unmatch_t_smear30","",150,-5,10,"Unmatched particle time [ns]","");
@@ -151,11 +158,18 @@ void plotter::go(){
          h1map["jet_alpha"]->Fill((*jet_alpha_PV)[i]);         // alpha PV of each jet
          h1map["jet_theta2D"]->Fill((*jet_theta_2D)[i]);       // theta 2D of each jet
          h1map["jet_t"]->Fill((*jet_avg_t)[i]);                // jet (averaged constituent) timing
+         h1map["jet_t_smear0"]->Fill((*jet_smear_0_t)[i]);     // smeared 0ps histos
          h1map["jet_t_smear30"]->Fill((*jet_smear_30_t)[i]);   // smeared 30ps histos
          h1map["jet_t_smear50"]->Fill((*jet_smear_50_t)[i]);   // smeared 50ps histos
          h1map["jet_t_smear70"]->Fill((*jet_smear_70_t)[i]);   // smeared 70ps histos
          h1map["jet_t_smear180"]->Fill((*jet_smear_180_t)[i]); // smeared 180ps histos
          h1map["jet_t_smear500"]->Fill((*jet_smear_500_t)[i]); // smeared 500ps histos
+         h1map["jet_t_diff0"]->Fill(((*jet_smear_0_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
+         h1map["jet_t_diff30"]->Fill(((*jet_smear_30_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
+         h1map["jet_t_diff50"]->Fill(((*jet_smear_50_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
+         h1map["jet_t_diff70"]->Fill(((*jet_smear_70_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
+         h1map["jet_t_diff180"]->Fill(((*jet_smear_180_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
+         h1map["jet_t_diff500"]->Fill(((*jet_smear_500_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
          if ((*jet_avg_t)[i] > max_jet_t){ h1map["max_jet_t"]->Fill(max_jet_t); max_jet_t = (*jet_avg_t)[i]; } // max avg jet time
      }
 
@@ -170,6 +184,14 @@ void plotter::go(){
 
   // fit ctau plot
   h1map["LL_cTau"]->Fit("expo");
+
+  // fit time diff plots
+  h1map["jet_t_diff0"]->Fit("gaus");
+  h1map["jet_t_diff30"]->Fit("gaus");
+  h1map["jet_t_diff50"]->Fit("gaus");
+  h1map["jet_t_diff70"]->Fit("gaus");
+  h1map["jet_t_diff180"]->Fit("gaus");
+  h1map["jet_t_diff500"]->Fit("gaus");
 
   // save plots
   std::cout << "Saving plots" << std::endl;
@@ -398,6 +420,7 @@ void plotter::setuptreebranches()
    genpar_t = 0;
    jet_nconst = 0;
    jet_avg_t = 0;
+   jet_smear_0_t = 0;
    jet_smear_30_t = 0;
    jet_smear_50_t = 0;
    jet_smear_70_t = 0;
@@ -522,6 +545,7 @@ void plotter::setuptreebranches()
    t->SetBranchAddress("genpar_t", &genpar_t, &b_genpar_t);
    t->SetBranchAddress("jet_nconst", &jet_nconst, &b_jet_nconst);
    t->SetBranchAddress("jet_avg_t", &jet_avg_t, &b_jet_avg_t);
+   t->SetBranchAddress("jet_smear_0_t", &jet_smear_0_t, &b_jet_smear_0_t);
    t->SetBranchAddress("jet_smear_30_t", &jet_smear_30_t, &b_jet_smear_30_t);
    t->SetBranchAddress("jet_smear_50_t", &jet_smear_50_t, &b_jet_smear_50_t);
    t->SetBranchAddress("jet_smear_70_t", &jet_smear_70_t, &b_jet_smear_70_t);

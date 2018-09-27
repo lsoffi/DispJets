@@ -33,7 +33,7 @@ analysis::analysis(TString indir, TString outdir, TString t_cut, TString t_res, 
 
   // setup xsec values
   for (int f = 0; f < nSig; f++){
-    xsec[s_file[f]] = 0.1994; // signal xsec = 1pb
+    xsec[s_file[f]] = 1.0;//0.1994; // signal xsec = 1pb
   }
   xsec["QCD"] = 10000; 
  
@@ -94,7 +94,7 @@ float analysis::applySel(TString file)
   }
 
   // apply cut
-  TH1F * h = new TH1F("h","",150,-5,10);
+  TH1F * h = new TH1F("h","",2000,-100,100);
   if (res=="0") t->Draw("jet_avg_t >> h",Form("%s",cut.Data()));
   else          t->Draw(Form("jet_smear_%s_t >> h",res.Data()),Form("%s",cut.Data()));
 

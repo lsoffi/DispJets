@@ -46,7 +46,7 @@ void multiplot::go()
 
       // pick up the histograms
       h[i][j] = (TH1F*)fin->Get(Form("%s",hist[i][j].Data()));
-      if (h[i][j]==NULL) std::cout << "NO HISTO" << std::endl;
+      if (h[i][j]==NULL) std::cout << "NO HISTO: " << hist[i][j].Data() << std::endl;
       // get the efficiency
       e[i][j].resize(ncuts[i]);
       tmp_int = h[i][j]->Integral();
@@ -203,7 +203,7 @@ void multiplot::setupcuts()
 void multiplot::setuphistos()
 {
 
-  nh = 2;
+  nh = 3;
   hist.resize(nh);
   // hist[0] are jet t plots
   hist[0].push_back("jet_t");
@@ -219,6 +219,12 @@ void multiplot::setuphistos()
   hist[1].push_back("unmatch_t_smear70");
   hist[1].push_back("unmatch_t_smear180");
   hist[1].push_back("unmatch_t_smear500");
+  // hist[2] are difference in jet t and smearing
+  hist[2].push_back("jet_t_diff30");
+  hist[2].push_back("jet_t_diff50");
+  hist[2].push_back("jet_t_diff70");
+  hist[2].push_back("jet_t_diff180");
+  hist[2].push_back("jet_t_diff500");
 
   for (unsigned int i = 0; i < nh; i++){
     nsub.push_back(hist[i].size());
@@ -236,6 +242,11 @@ void multiplot::setuphistos()
   colors["unmatch_t_smear70"]	= kGreen;
   colors["unmatch_t_smear180"]	= kRed;
   colors["unmatch_t_smear500"]	= kOrange;
+  colors["jet_t_diff30"]	= kMagenta;
+  colors["jet_t_diff50"]	= kTeal;
+  colors["jet_t_diff70"]	= kGreen;
+  colors["jet_t_diff180"]	= kRed;
+  colors["jet_t_diff500"]	= kOrange;
 
 }// end setuphistos
 

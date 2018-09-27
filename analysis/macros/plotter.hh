@@ -160,6 +160,7 @@ private:
   vector<float>   *genpar_t;
   vector<int>     *jet_nconst;
   vector<float>   *jet_avg_t;
+  vector<float>   *jet_smear_0_t;
   vector<float>   *jet_smear_30_t;
   vector<float>   *jet_smear_50_t;
   vector<float>   *jet_smear_70_t;
@@ -284,6 +285,7 @@ private:
   TBranch        *b_genpar_t;   //!
   TBranch        *b_jet_nconst;   //!
   TBranch        *b_jet_avg_t;   //!
+  TBranch        *b_jet_smear_0_t;   //!
   TBranch        *b_jet_smear_30_t;   //!
   TBranch        *b_jet_smear_50_t;   //!
   TBranch        *b_jet_smear_70_t;   //!

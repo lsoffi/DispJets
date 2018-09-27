@@ -134,6 +134,7 @@ void skimmer::run()
   vector<float> genpar_t;		outtree->Branch("genpar_t",		&genpar_t);
   vector<int>   jet_nconst;		outtree->Branch("jet_nconst",		&jet_nconst);
   vector<float> jet_avg_t;		outtree->Branch("jet_avg_t",		&jet_avg_t);
+  vector<float> jet_smear_0_t;		outtree->Branch("jet_smear_0_t",	&jet_smear_0_t);
   vector<float> jet_smear_30_t;		outtree->Branch("jet_smear_30_t",	&jet_smear_30_t);
   vector<float> jet_smear_50_t;		outtree->Branch("jet_smear_50_t",	&jet_smear_50_t);
   vector<float> jet_smear_70_t;		outtree->Branch("jet_smear_70_t",	&jet_smear_70_t);
@@ -243,6 +244,7 @@ void skimmer::run()
     vector<float> tmp_genpar_t;
     vector<int>   tmp_jet_nconst;
     vector<float> tmp_jet_avg_t;	
+    vector<float> tmp_jet_smear_0_t;
     vector<float> tmp_jet_smear_30_t;	
     vector<float> tmp_jet_smear_50_t;	
     vector<float> tmp_jet_smear_70_t;	
@@ -257,6 +259,7 @@ void skimmer::run()
     float jet1_pt_all         = 0;
     float jet1_const_dt       = 0; 
     float jet1_time_raw       = 0;
+    float jet1_time_smear_0   = 0; 
     float jet1_time_smear_30  = 0; 
     float jet1_time_smear_50  = 0; 
     float jet1_time_smear_70  = 0; 
@@ -267,6 +270,7 @@ void skimmer::run()
     float jet2_pt_all         = 0;
     float jet2_const_dt       = 0; 
     float jet2_time_raw       = 0;
+    float jet2_time_smear_0   = 0; 
     float jet2_time_smear_30  = 0; 
     float jet2_time_smear_50  = 0; 
     float jet2_time_smear_70  = 0; 
@@ -277,6 +281,7 @@ void skimmer::run()
     float jet3_pt_all         = 0;
     float jet3_const_dt       = 0; 
     float jet3_time_raw       = 0;
+    float jet3_time_smear_0   = 0; 
     float jet3_time_smear_30  = 0; 
     float jet3_time_smear_50  = 0; 
     float jet3_time_smear_70  = 0; 
@@ -287,12 +292,14 @@ void skimmer::run()
     float jet4_pt_all         = 0;
     float jet4_const_dt       = 0; 
     float jet4_time_raw       = 0;
+    float jet4_time_smear_0   = 0; 
     float jet4_time_smear_30  = 0; 
     float jet4_time_smear_50  = 0; 
     float jet4_time_smear_70  = 0; 
     float jet4_time_smear_180 = 0;
     float jet4_time_smear_500 = 0;
 
+    float smear_value_0       = 0;
     float smear_value_30      = 0; 
     float smear_value_50      = 0; 
     float smear_value_70      = 0; 
@@ -319,7 +326,8 @@ void skimmer::run()
       if ((*genpar_stat)[gp] != 1)            continue; // keep only final state particles
       if (std::fabs((*genpar_eta)[gp]) > 1.5) continue; // keep only particles in the barrel
       if ((*genpar_pt)[gp] < 1.0)             continue; // keep only pT > 1 GeV tracks
-  
+ 
+      smear_value_0   = smearVal(0.00); // res: 0 ps  
       smear_value_30  = smearVal(0.03); // res: 30 ps -> 0.03 ns
       smear_value_50  = smearVal(0.05); // res: 50 ps -> 0.05 ns
       smear_value_70  = smearVal(0.07); // res: 70 ps -> 0.07 ns
@@ -344,6 +352,7 @@ void skimmer::run()
         jet1_const_dt        = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
         jet1_nconst         += 1.0; 
         jet1_time_raw       += jet1_const_dt;
+        jet1_time_smear_0   += jet1_const_dt*smear_value_0;
         jet1_time_smear_30  += jet1_const_dt*smear_value_30;
         jet1_time_smear_50  += jet1_const_dt*smear_value_50;
         jet1_time_smear_70  += jet1_const_dt*smear_value_70;
@@ -361,6 +370,7 @@ void skimmer::run()
         jet2_const_dt        = calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
         jet2_nconst         += 1.0;
         jet2_time_raw       += jet2_const_dt;
+        jet2_time_smear_0   += jet2_const_dt*smear_value_0;
         jet2_time_smear_30  += jet2_const_dt*smear_value_30;
         jet2_time_smear_50  += jet2_const_dt*smear_value_50;
         jet2_time_smear_70  += jet2_const_dt*smear_value_70;
@@ -378,6 +388,7 @@ void skimmer::run()
         jet3_const_dt        = calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
         jet3_nconst         += 1.0;
         jet3_time_raw       += jet3_const_dt;
+        jet3_time_smear_0   += jet3_const_dt*smear_value_0;
         jet3_time_smear_30  += jet3_const_dt*smear_value_30;
         jet3_time_smear_50  += jet3_const_dt*smear_value_50;
         jet3_time_smear_70  += jet3_const_dt*smear_value_70;
@@ -395,6 +406,7 @@ void skimmer::run()
         jet4_const_dt        = calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
         jet4_nconst         += 1.0;
         jet4_time_raw       += jet4_const_dt;
+        jet4_time_smear_0   += jet4_const_dt*smear_value_0;
         jet4_time_smear_30  += jet4_const_dt*smear_value_30;
         jet4_time_smear_50  += jet4_const_dt*smear_value_50;
         jet4_time_smear_70  += jet4_const_dt*smear_value_70;
@@ -434,6 +446,11 @@ void skimmer::run()
     tmp_jet_avg_t.push_back(calcAvgT(jet2_time_raw,jet2_nconst));
     tmp_jet_avg_t.push_back(calcAvgT(jet3_time_raw,jet3_nconst));
     tmp_jet_avg_t.push_back(calcAvgT(jet4_time_raw,jet4_nconst));
+    // smeared (no smearing) jet time
+    tmp_jet_smear_0_t.push_back(calcAvgT(jet1_time_smear_0,jet1_nconst));
+    tmp_jet_smear_0_t.push_back(calcAvgT(jet2_time_smear_0,jet2_nconst));
+    tmp_jet_smear_0_t.push_back(calcAvgT(jet3_time_smear_0,jet3_nconst));
+    tmp_jet_smear_0_t.push_back(calcAvgT(jet4_time_smear_0,jet4_nconst));
     // smeared jet time (res 30 ps)
     tmp_jet_smear_30_t.push_back(calcAvgT(jet1_time_smear_30,jet1_nconst));
     tmp_jet_smear_30_t.push_back(calcAvgT(jet2_time_smear_30,jet2_nconst));
@@ -464,6 +481,7 @@ void skimmer::run()
     jet_nconst.clear();
     jet_pt.clear();
     jet_avg_t.clear();
+    jet_smear_0_t.clear();
     jet_smear_30_t.clear();
     jet_smear_50_t.clear();
     jet_smear_70_t.clear();
@@ -479,6 +497,7 @@ void skimmer::run()
       jet_nconst.push_back(tmp_jet_nconst[i]);
       jet_pt.push_back(tmp_jet_pt[i]);
       jet_avg_t.push_back(tmp_jet_avg_t[i]);
+      jet_smear_0_t.push_back(tmp_jet_smear_0_t[i]);
       jet_smear_30_t.push_back(tmp_jet_smear_30_t[i]);
       jet_smear_50_t.push_back(tmp_jet_smear_50_t[i]);
       jet_smear_70_t.push_back(tmp_jet_smear_70_t[i]);
