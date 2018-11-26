@@ -36,6 +36,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
+#include "SimDataFormats/Track/interface/SimTrack.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/Math/interface/deltaR.h"
@@ -134,6 +135,7 @@ struct tree_struc_{
   std::vector<float>		genpar_lo;
   std::vector<float>		genpar_laline;
   std::vector<float>		genpar_loline;
+  std::vector<float>		genpar_lmline;
   std::vector<float>		genpar_beta;
   std::vector<float>		genpar_q;
   int				nmothers;
@@ -192,6 +194,7 @@ class DisplacedJetsAnalyzer : public edm::EDAnalyzer {
       edm::EDGetTokenT<std::vector<reco::GenParticle> >		genparticleToken_;
       edm::EDGetTokenT<edm::View<PileupSummaryInfo> >		pileupToken_;
       edm::EDGetTokenT<std::vector<SimVertex> >			verticesToken_;
+      edm::EDGetTokenT<std::vector<SimTrack> >			tracksToken_;
 
       // setup tree;
       TTree* tree;
@@ -217,6 +220,7 @@ DisplacedJetsAnalyzer::DisplacedJetsAnalyzer(const edm::ParameterSet& iConfig)
    genparticleToken_    = consumes<std::vector<reco::GenParticle> >(iConfig.getUntrackedParameter<edm::InputTag>("genparticles"));
    pileupToken_		= consumes<edm::View<PileupSummaryInfo> >(iConfig.getUntrackedParameter<edm::InputTag>("pileupInfo"));
    verticesToken_	= consumes<std::vector<SimVertex> >(iConfig.getUntrackedParameter<edm::InputTag>("vertices"));
+   tracksToken_		= consumes<std::vector<SimTrack> >(iConfig.getUntrackedParameter<edm::InputTag>("tracks"));
 
 }
 
@@ -255,6 +259,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
   edm::Handle<std::vector<SimVertex> > vertices;
   iEvent.getByToken(verticesToken_, vertices);
+
+  edm::Handle<std::vector<SimTrack> > tracks;
+  iEvent.getByToken(tracksToken_, tracks);
 
   // --- general event info 
   unsigned long int event = iEvent.id().event();   
@@ -342,6 +349,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<float>	genpar_lo;
   std::vector<float>	genpar_laline;
   std::vector<float>	genpar_loline;
+  std::vector<float>	genpar_lmline;
   std::vector<float>	genpar_beta;
   std::vector<float>	genpar_q;
   int nmothers = 0;
@@ -527,6 +535,15 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     float q1_mx   = -10000;
     float q1_my   = -10000;
     float q1_mz   = -10000;
+    float q2_mx   = -10000;
+    float q2_my   = -10000;
+    float q2_mz   = -10000;
+    float q3_mx   = -10000;
+    float q3_my   = -10000;
+    float q3_mz   = -10000;
+    float q4_mx   = -10000;
+    float q4_my   = -10000;
+    float q4_mz   = -10000;
 
     // store the 4 quarks that are produced in the hard interaction
     int interestingjet = 0;
@@ -642,9 +659,9 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         if (std::abs(mom->pdgId())==9000006 && mom35>1) tmp_mom_dupl = 1;
         if (std::abs(mom->pdgId())==9000007 && mom36>1) tmp_mom_dupl = 1;
         if (interestingjet==1){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
-        if (interestingjet==2){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
-        if (interestingjet==3){ q1_mx = mx; q1_my = my; q1_mz = mz;} 
-        if (interestingjet==4){ q1_mx = mx; q1_my = my; q1_mz = mz;}
+        if (interestingjet==2){ q2_mx = mx; q2_my = my; q2_mz = mz;} 
+        if (interestingjet==3){ q3_mx = mx; q3_my = my; q3_mz = mz;} 
+        if (interestingjet==4){ q4_mx = mx; q4_my = my; q4_mz = mz;}
       }
 
       //std::cout << " q1: " << q1_mx << " " << q1_mx << " " << q1_mx << std::endl;
@@ -766,21 +783,38 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       deltav3.push_back(dv3);
       deltav4.push_back(dv4);
 
+      // pick up mom vertex (of the quark jet) for each gen particle 
+      float q_mx = 0;
+      float q_my = 0; 
+      float q_mz = 0;
+      if (match1 == 1){ q_mx = q1_mx; q_my = q1_my; q_mz = q1_mz; } 
+      if (match2 == 1){ q_mx = q2_mx; q_my = q2_my; q_mz = q2_mz; } 
+      if (match3 == 1){ q_mx = q3_mx; q_my = q3_my; q_mz = q3_mz; } 
+      if (match4 == 1){ q_mx = q4_mx; q_my = q4_my; q_mz = q4_mz; } 
+
       // calculating timing delay
       float px0 = genpar_iter.px();
       float py0 = genpar_iter.py();
       float pz0 = genpar_iter.pz();
       float q   = genpar_iter.charge();
       float s = getXYZ(116.10,q,vx,vy,vz,px0,py0,pz0,xT,yT,zT); // find arclength & xyz coord of point on timing layer
-      float loline = getL(xT-q1_mx,yT-q1_my,zT-q1_mz);          // distance from PV to point on timing layer
+      float loline = getL(xT-q_mx,yT-q_my,zT-q_mz);             // distance from PV to point on timing layer
       float lTline = getL(xT-vx,yT-vy,zT-vz);                   // distance from SV to point on timing layer
-      float lo = getLtrue(s,zT-q1_mz);                          // distance from PV to point on timing layer
+      float lmline = getL(vx-q_mx,vy-q_my,vz-q_mz);             // distance from PV to SV
+      float lo = getLtrue(s,zT-q_mz);                           // distance from PV to point on timing layer
       float lT = getLtrue(s,zT-vz);                             // distance from SV to point on timing layer
+
+      // NOTE: mom_Lxyz is not exactly equivalent to lmline since mom_Lxyz gives distance from 
+      // the mom vertex to the leading quark vertex. Some particles in the jet are not created 
+      // exactly at that same point.
+      // lT + lmline is ALWAYS bigger than loline
+      // lT + mom_Lxyz can be marginally smaller than loline 
 
       genpar_lo.push_back(lo);
       genpar_la.push_back(lT);
       genpar_loline.push_back(loline);
       genpar_laline.push_back(lTline);
+      genpar_lmline.push_back(lmline);
       genpar_beta.push_back(genpar_iter.p()/genpar_iter.energy());
       genpar_q.push_back(q);
  
@@ -909,6 +943,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
     tree_.genpar_lo.push_back(genpar_lo[ip]);
     tree_.genpar_laline.push_back(genpar_laline[ip]);
     tree_.genpar_loline.push_back(genpar_loline[ip]);
+    tree_.genpar_lmline.push_back(genpar_lmline[ip]);
     tree_.genpar_beta.push_back(genpar_beta[ip]);
     tree_.genpar_q.push_back(genpar_q[ip]);
     tree_.genpar_match_q1lo.push_back(match_q1lo[ip]);
@@ -1044,8 +1079,9 @@ void DisplacedJetsAnalyzer::beginJob()
   tree->Branch("genpar_dv4",		&tree_.genpar_dv4);
   tree->Branch("genpar_lo",		&tree_.genpar_lo);
   tree->Branch("genpar_la",		&tree_.genpar_la);
-  tree->Branch("genpar_loline",		&tree_.genpar_loline);
   tree->Branch("genpar_laline",		&tree_.genpar_laline);
+  tree->Branch("genpar_loline",		&tree_.genpar_loline);
+  tree->Branch("genpar_lmline",		&tree_.genpar_lmline);
   tree->Branch("genpar_beta",		&tree_.genpar_beta);
   tree->Branch("genpar_q",		&tree_.genpar_q);
   tree->Branch("genpar_match_q1lo",	&tree_.genpar_match_q1lo);
@@ -1224,6 +1260,7 @@ void DisplacedJetsAnalyzer::clearVectors()
   tree_.genpar_lo.clear();
   tree_.genpar_laline.clear();
   tree_.genpar_loline.clear();
+  tree_.genpar_lmline.clear();
   tree_.genpar_beta.clear();
   tree_.genpar_q.clear();
   tree_.mom_id.clear();

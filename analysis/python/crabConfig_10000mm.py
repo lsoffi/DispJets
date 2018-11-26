@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config
 config = config()
 
 ## Name of output directory ##
-config.General.requestName = 'DispJets_m50_ct0mm'
+config.General.requestName = 'DispJets_m50_ct10000mm'
 config.General.workArea    = 'crab_projects'
 
 ## Input analyzer pset ## 
@@ -13,7 +13,7 @@ config.JobType.psetName    = 'crabConfigTemplate.py'
 
 ## Input Data ##
 #config.Data.inputDataset   = ''
-config.Data.userInputFiles = open('inputfiles_0mm.txt').readlines()
+config.Data.userInputFiles = open('inputfiles_10000mm.txt').readlines()
 config.Data.unitsPerJob    = 1
 config.Data.splitting      = 'FileBased' 
 

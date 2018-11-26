@@ -140,6 +140,11 @@ void skimmer::run()
   vector<float> jet_smear_70_t;		outtree->Branch("jet_smear_70_t",	&jet_smear_70_t);
   vector<float> jet_smear_180_t;	outtree->Branch("jet_smear_180_t",	&jet_smear_180_t);
   vector<float> jet_smear_500_t;	outtree->Branch("jet_smear_500_t",	&jet_smear_500_t);
+  vector<float> jet_wgt_t;		outtree->Branch("jet_wgt_t",		&jet_wgt_t);
+  vector<float> jet_wgt_t_30;		outtree->Branch("jet_wgt_t_30",		&jet_wgt_t_30);
+  vector<float> jet_wgt_t_50;		outtree->Branch("jet_wgt_t_50",		&jet_wgt_t_50);
+  vector<float> jet_wgt_t_70;		outtree->Branch("jet_wgt_t_70",		&jet_wgt_t_70);
+  vector<float> jet_wgt_t_180;		outtree->Branch("jet_wgt_t_180",	&jet_wgt_t_180);
   vector<float> jet_pt;			outtree->Branch("jet_pt",		&jet_pt);
   vector<float> jet_alpha_PV;		outtree->Branch("jet_alpha_PV",		&jet_alpha_PV);
   vector<float> jet_theta_2D;		outtree->Branch("jet_theta_2D",		&jet_theta_2D);
@@ -250,11 +255,16 @@ void skimmer::run()
     vector<float> tmp_jet_smear_70_t;	
     vector<float> tmp_jet_smear_180_t;
     vector<float> tmp_jet_smear_500_t;
+    vector<float> tmp_jet_wgt_t;
+    vector<float> tmp_jet_wgt_t_30;
+    vector<float> tmp_jet_wgt_t_50;
+    vector<float> tmp_jet_wgt_t_70;
+    vector<float> tmp_jet_wgt_t_180;
     vector<float> tmp_jet_pt;	
     vector<float> tmp_jet_alpha_PV;
     vector<float> tmp_jet_theta_2D;
 
-    int   jet1_nconst         = 0;
+    float jet1_nconst         = 0;
     float jet1_pt             = 0;
     float jet1_pt_all         = 0;
     float jet1_const_dt       = 0; 
@@ -265,7 +275,12 @@ void skimmer::run()
     float jet1_time_smear_70  = 0; 
     float jet1_time_smear_180 = 0;
     float jet1_time_smear_500 = 0;
-    int   jet2_nconst         = 0; 
+    float jet1_twgt_raw       = 0;
+    float jet1_twgt_smear_30  = 0;
+    float jet1_twgt_smear_50  = 0;
+    float jet1_twgt_smear_70  = 0; 
+    float jet1_twgt_smear_180 = 0;
+    float jet2_nconst         = 0; 
     float jet2_pt             = 0;
     float jet2_pt_all         = 0;
     float jet2_const_dt       = 0; 
@@ -276,7 +291,12 @@ void skimmer::run()
     float jet2_time_smear_70  = 0; 
     float jet2_time_smear_180 = 0;
     float jet2_time_smear_500 = 0;
-    int   jet3_nconst         = 0; 
+    float jet2_twgt_raw       = 0;
+    float jet2_twgt_smear_30  = 0;
+    float jet2_twgt_smear_50  = 0;
+    float jet2_twgt_smear_70  = 0; 
+    float jet2_twgt_smear_180 = 0;
+    float jet3_nconst         = 0; 
     float jet3_pt             = 0;
     float jet3_pt_all         = 0;
     float jet3_const_dt       = 0; 
@@ -287,7 +307,12 @@ void skimmer::run()
     float jet3_time_smear_70  = 0; 
     float jet3_time_smear_180 = 0;
     float jet3_time_smear_500 = 0;
-    int   jet4_nconst         = 0; 
+    float jet3_twgt_raw       = 0;
+    float jet3_twgt_smear_30  = 0;
+    float jet3_twgt_smear_50  = 0;
+    float jet3_twgt_smear_70  = 0; 
+    float jet3_twgt_smear_180 = 0;
+    float jet4_nconst         = 0; 
     float jet4_pt             = 0;
     float jet4_pt_all         = 0;
     float jet4_const_dt       = 0; 
@@ -298,6 +323,11 @@ void skimmer::run()
     float jet4_time_smear_70  = 0; 
     float jet4_time_smear_180 = 0;
     float jet4_time_smear_500 = 0;
+    float jet4_twgt_raw       = 0;
+    float jet4_twgt_smear_30  = 0;
+    float jet4_twgt_smear_50  = 0;
+    float jet4_twgt_smear_70  = 0; 
+    float jet4_twgt_smear_180 = 0;
 
     float smear_value_0       = 0;
     float smear_value_30      = 0; 
@@ -326,16 +356,16 @@ void skimmer::run()
       if ((*genpar_stat)[gp] != 1)            continue; // keep only final state particles
       if (std::fabs((*genpar_eta)[gp]) > 1.5) continue; // keep only particles in the barrel
       if ((*genpar_pt)[gp] < 1.0)             continue; // keep only pT > 1 GeV tracks
- 
-      smear_value_0   = smearVal(0.00); // res: 0 ps  
-      smear_value_30  = smearVal(0.03); // res: 30 ps -> 0.03 ns
-      smear_value_50  = smearVal(0.05); // res: 50 ps -> 0.05 ns
-      smear_value_70  = smearVal(0.07); // res: 70 ps -> 0.07 ns
-      smear_value_180 = smearVal(0.18); // res: 180 ps -> 0.18 ns
-      smear_value_500 = smearVal(0.50); // res: 500 ps -> 0.50 ns
+
+      smear_value_0   = smearVal(0.18); // new res: 180 ps     // old res: 0 ps  
+      smear_value_30  = smearVal(TMath::Sqrt(0.18*0.18 + 0.03*0.03)); // new res: 180+30 ps  // old res: 30 ps -> 0.03 ns
+      smear_value_50  = smearVal(TMath::Sqrt(0.18*0.18 + 0.05*0.05)); // new res: 180+50 ps  // old res: 50 ps -> 0.05 ns
+      smear_value_70  = smearVal(TMath::Sqrt(0.18*0.18 + 0.07*0.07)); // new res: 180+70 ps  // old res: 70 ps -> 0.07 ns
+      smear_value_180 = smearVal(TMath::Sqrt(0.18*0.18 + 0.18*0.18)); // new res: 180+180 ps // old res: 180 ps -> 0.18 ns
+      smear_value_500 = smearVal(0.50); // new res: 500 ps     // old res: 500 ps -> 0.50 ns
  
       // constituent particle info 
-      jet_const_beta = 1.0;
+      jet_const_beta = (*genpar_beta)[gp];//1.0;
       jet_const_lxyz = (*genpar_la)[gp];
       // hypothetical non-LL info
       jet_orig_beta  = 1.0; // (*genpar_beta)[gp]
@@ -349,15 +379,24 @@ void skimmer::run()
  
       //--- q1 jet
       if ( (*genpar_match_q1)[gp]==1 ){
-        jet1_const_dt        = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
-        jet1_nconst         += 1.0; 
+        //if (doPtWgt) jet1_const_dt  = (*genpar_pt)[gp]*calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //else         jet1_const_dt  = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //if (doPtWgt) jet1_nconst   += (*genpar_pt)[gp]; 
+        //else         jet1_nconst   += 1.0; 
+        jet1_const_dt  = calcDeltaT(jet1_mom_lxyz,jet1_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        jet1_nconst   += 1.0; 
         jet1_time_raw       += jet1_const_dt;
-        jet1_time_smear_0   += jet1_const_dt*smear_value_0;
-        jet1_time_smear_30  += jet1_const_dt*smear_value_30;
-        jet1_time_smear_50  += jet1_const_dt*smear_value_50;
-        jet1_time_smear_70  += jet1_const_dt*smear_value_70;
-        jet1_time_smear_180 += jet1_const_dt*smear_value_180;
-        jet1_time_smear_500 += jet1_const_dt*smear_value_500;
+        jet1_time_smear_0   += jet1_const_dt+smear_value_0;
+        jet1_time_smear_30  += jet1_const_dt+smear_value_30;
+        jet1_time_smear_50  += jet1_const_dt+smear_value_50;
+        jet1_time_smear_70  += jet1_const_dt+smear_value_70;
+        jet1_time_smear_180 += jet1_const_dt+smear_value_180;
+        jet1_time_smear_500 += jet1_const_dt+smear_value_500;
+        jet1_twgt_raw       += (*genpar_pt)[gp]*jet1_const_dt;
+        jet1_twgt_smear_30  += (*genpar_pt)[gp]*(jet1_const_dt+smear_value_30);
+        jet1_twgt_smear_50  += (*genpar_pt)[gp]*(jet1_const_dt+smear_value_50);
+        jet1_twgt_smear_70  += (*genpar_pt)[gp]*(jet1_const_dt+smear_value_70);
+        jet1_twgt_smear_180 += (*genpar_pt)[gp]*(jet1_const_dt+smear_value_180);
         jet1_pt             += (*genpar_pt)[gp]; 
         if ( (*genpar_pt)[gp] >= tmp_const_pt_jet1 ){ // get theta of highest momentum constituent
           tmp_const_pt_jet1    = (*genpar_pt)[gp];
@@ -367,15 +406,24 @@ void skimmer::run()
 
       // --- q2 jet
       if ( (*genpar_match_q2)[gp]==1){
-        jet2_const_dt        = calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
-        jet2_nconst         += 1.0;
+        //if (doPtWgt) jet2_const_dt  = (*genpar_pt)[gp]*calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //else         jet2_const_dt  = calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //if (doPtWgt) jet2_nconst   += (*genpar_pt)[gp]; 
+        //else         jet2_nconst   += 1.0;
+        jet2_const_dt  = calcDeltaT(jet2_mom_lxyz,jet2_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        jet2_nconst   += 1.0;
         jet2_time_raw       += jet2_const_dt;
-        jet2_time_smear_0   += jet2_const_dt*smear_value_0;
-        jet2_time_smear_30  += jet2_const_dt*smear_value_30;
-        jet2_time_smear_50  += jet2_const_dt*smear_value_50;
-        jet2_time_smear_70  += jet2_const_dt*smear_value_70;
-        jet2_time_smear_180 += jet2_const_dt*smear_value_180;
-        jet2_time_smear_500 += jet2_const_dt*smear_value_500;
+        jet2_time_smear_0   += jet2_const_dt+smear_value_0;
+        jet2_time_smear_30  += jet2_const_dt+smear_value_30;
+        jet2_time_smear_50  += jet2_const_dt+smear_value_50;
+        jet2_time_smear_70  += jet2_const_dt+smear_value_70;
+        jet2_time_smear_180 += jet2_const_dt+smear_value_180;
+        jet2_time_smear_500 += jet2_const_dt+smear_value_500;
+        jet2_twgt_raw       += (*genpar_pt)[gp]*jet2_const_dt;
+        jet2_twgt_smear_30  += (*genpar_pt)[gp]*(jet2_const_dt+smear_value_30);
+        jet2_twgt_smear_50  += (*genpar_pt)[gp]*(jet2_const_dt+smear_value_50);
+        jet2_twgt_smear_70  += (*genpar_pt)[gp]*(jet2_const_dt+smear_value_70);
+        jet2_twgt_smear_180 += (*genpar_pt)[gp]*(jet2_const_dt+smear_value_180);
         jet2_pt             += (*genpar_pt)[gp]; 
         if ( (*genpar_pt)[gp] >= tmp_const_pt_jet2 ){ // get theta of highest momentum constituent
           tmp_const_pt_jet2    = (*genpar_pt)[gp];
@@ -385,15 +433,24 @@ void skimmer::run()
 
       // --- q3 jet
       if ( (*genpar_match_q3)[gp]==1){
-        jet3_const_dt        = calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
-        jet3_nconst         += 1.0;
+        //if (doPtWgt) jet3_const_dt  = (*genpar_pt)[gp]*calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //else         jet3_const_dt  = calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //if (doPtWgt) jet3_nconst   += (*genpar_pt)[gp];
+        //else         jet3_nconst   += 1.0;
+        jet3_const_dt  = calcDeltaT(jet3_mom_lxyz,jet3_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        jet3_nconst   += 1.0;
         jet3_time_raw       += jet3_const_dt;
-        jet3_time_smear_0   += jet3_const_dt*smear_value_0;
-        jet3_time_smear_30  += jet3_const_dt*smear_value_30;
-        jet3_time_smear_50  += jet3_const_dt*smear_value_50;
-        jet3_time_smear_70  += jet3_const_dt*smear_value_70;
-        jet3_time_smear_180 += jet3_const_dt*smear_value_180;
-        jet3_time_smear_500 += jet3_const_dt*smear_value_500;
+        jet3_time_smear_0   += jet3_const_dt+smear_value_0;
+        jet3_time_smear_30  += jet3_const_dt+smear_value_30;
+        jet3_time_smear_50  += jet3_const_dt+smear_value_50;
+        jet3_time_smear_70  += jet3_const_dt+smear_value_70;
+        jet3_time_smear_180 += jet3_const_dt+smear_value_180;
+        jet3_time_smear_500 += jet3_const_dt+smear_value_500;
+        jet3_twgt_raw       += (*genpar_pt)[gp]*jet3_const_dt;
+        jet3_twgt_smear_30  += (*genpar_pt)[gp]*(jet3_const_dt+smear_value_30);
+        jet3_twgt_smear_50  += (*genpar_pt)[gp]*(jet3_const_dt+smear_value_50);
+        jet3_twgt_smear_70  += (*genpar_pt)[gp]*(jet3_const_dt+smear_value_70);
+        jet3_twgt_smear_180 += (*genpar_pt)[gp]*(jet3_const_dt+smear_value_180);
         jet3_pt             += (*genpar_pt)[gp]; 
         if ( (*genpar_pt)[gp] >= tmp_const_pt_jet3 ){ // get theta of highest momentum constituent
           tmp_const_pt_jet3    = (*genpar_pt)[gp];
@@ -403,15 +460,24 @@ void skimmer::run()
 
       // --- q4 jet
       if ( (*genpar_match_q4)[gp]==1){
-        jet4_const_dt        = calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
-        jet4_nconst         += 1.0;
+        //if (doPtWgt) jet4_const_dt  = (*genpar_pt)[gp]*calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //else         jet4_const_dt  = calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        //if (doPtWgt) jet4_nconst   += (*genpar_pt)[gp];
+        //else         jet4_nconst   += 1.0;
+        jet4_const_dt  = calcDeltaT(jet4_mom_lxyz,jet4_mom_beta,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta);
+        jet4_nconst   += 1.0;
         jet4_time_raw       += jet4_const_dt;
-        jet4_time_smear_0   += jet4_const_dt*smear_value_0;
-        jet4_time_smear_30  += jet4_const_dt*smear_value_30;
-        jet4_time_smear_50  += jet4_const_dt*smear_value_50;
-        jet4_time_smear_70  += jet4_const_dt*smear_value_70;
-        jet4_time_smear_180 += jet4_const_dt*smear_value_180;
-        jet4_time_smear_500 += jet4_const_dt*smear_value_500;
+        jet4_time_smear_0   += jet4_const_dt+smear_value_0;
+        jet4_time_smear_30  += jet4_const_dt+smear_value_30;
+        jet4_time_smear_50  += jet4_const_dt+smear_value_50;
+        jet4_time_smear_70  += jet4_const_dt+smear_value_70;
+        jet4_time_smear_180 += jet4_const_dt+smear_value_180;
+        jet4_time_smear_500 += jet4_const_dt+smear_value_500;
+        jet4_twgt_raw       += (*genpar_pt)[gp]*jet4_const_dt;
+        jet4_twgt_smear_30  += (*genpar_pt)[gp]*(jet4_const_dt+smear_value_30);
+        jet4_twgt_smear_50  += (*genpar_pt)[gp]*(jet4_const_dt+smear_value_50);
+        jet4_twgt_smear_70  += (*genpar_pt)[gp]*(jet4_const_dt+smear_value_70);
+        jet4_twgt_smear_180 += (*genpar_pt)[gp]*(jet4_const_dt+smear_value_180);
         jet4_pt             += (*genpar_pt)[gp]; 
         if ( (*genpar_pt)[gp] >= tmp_const_pt_jet4 ){ // get theta of highest momentum constituent
           tmp_const_pt_jet4    = (*genpar_pt)[gp];
@@ -476,6 +542,32 @@ void skimmer::run()
     tmp_jet_smear_500_t.push_back(calcAvgT(jet2_time_smear_500,jet2_nconst));
     tmp_jet_smear_500_t.push_back(calcAvgT(jet3_time_smear_500,jet3_nconst));
     tmp_jet_smear_500_t.push_back(calcAvgT(jet4_time_smear_500,jet4_nconst));
+    
+    // weighted jet time
+    tmp_jet_wgt_t.push_back(calcAvgT(jet1_twgt_raw,jet1_pt));
+    tmp_jet_wgt_t.push_back(calcAvgT(jet2_twgt_raw,jet2_pt));
+    tmp_jet_wgt_t.push_back(calcAvgT(jet3_twgt_raw,jet3_pt));
+    tmp_jet_wgt_t.push_back(calcAvgT(jet4_twgt_raw,jet4_pt));
+    // weighted jet time
+    tmp_jet_wgt_t_30.push_back(calcAvgT(jet1_twgt_smear_30,jet1_pt));
+    tmp_jet_wgt_t_30.push_back(calcAvgT(jet2_twgt_smear_30,jet2_pt));
+    tmp_jet_wgt_t_30.push_back(calcAvgT(jet3_twgt_smear_30,jet3_pt));
+    tmp_jet_wgt_t_30.push_back(calcAvgT(jet4_twgt_smear_30,jet4_pt));
+    // weighted jet time
+    tmp_jet_wgt_t_50.push_back(calcAvgT(jet1_twgt_smear_50,jet1_pt));
+    tmp_jet_wgt_t_50.push_back(calcAvgT(jet2_twgt_smear_50,jet2_pt));
+    tmp_jet_wgt_t_50.push_back(calcAvgT(jet3_twgt_smear_50,jet3_pt));
+    tmp_jet_wgt_t_50.push_back(calcAvgT(jet4_twgt_smear_50,jet4_pt));
+    // weighted jet time
+    tmp_jet_wgt_t_70.push_back(calcAvgT(jet1_twgt_smear_70,jet1_pt));
+    tmp_jet_wgt_t_70.push_back(calcAvgT(jet2_twgt_smear_70,jet2_pt));
+    tmp_jet_wgt_t_70.push_back(calcAvgT(jet3_twgt_smear_70,jet3_pt));
+    tmp_jet_wgt_t_70.push_back(calcAvgT(jet4_twgt_smear_70,jet4_pt));
+    // weighted jet time
+    tmp_jet_wgt_t_180.push_back(calcAvgT(jet1_twgt_smear_180,jet1_pt));
+    tmp_jet_wgt_t_180.push_back(calcAvgT(jet2_twgt_smear_180,jet2_pt));
+    tmp_jet_wgt_t_180.push_back(calcAvgT(jet3_twgt_smear_180,jet3_pt));
+    tmp_jet_wgt_t_180.push_back(calcAvgT(jet4_twgt_smear_180,jet4_pt));
 
     // clear new tree vectors 
     jet_nconst.clear();
@@ -487,6 +579,11 @@ void skimmer::run()
     jet_smear_70_t.clear();
     jet_smear_180_t.clear();  
     jet_smear_500_t.clear();  
+    jet_wgt_t.clear();
+    jet_wgt_t_30.clear();
+    jet_wgt_t_50.clear();
+    jet_wgt_t_70.clear();
+    jet_wgt_t_180.clear();
     jet_alpha_PV.clear();
     jet_theta_2D.clear();
     genjet_alpha_PV.clear();
@@ -503,6 +600,11 @@ void skimmer::run()
       jet_smear_70_t.push_back(tmp_jet_smear_70_t[i]);
       jet_smear_180_t.push_back(tmp_jet_smear_180_t[i]);
       jet_smear_500_t.push_back(tmp_jet_smear_500_t[i]);
+      jet_wgt_t.push_back(tmp_jet_wgt_t[i]);
+      jet_wgt_t_30.push_back(tmp_jet_wgt_t_30[i]);
+      jet_wgt_t_50.push_back(tmp_jet_wgt_t_50[i]);
+      jet_wgt_t_70.push_back(tmp_jet_wgt_t_70[i]);
+      jet_wgt_t_180.push_back(tmp_jet_wgt_t_180[i]);
       jet_alpha_PV.push_back(tmp_jet_alpha_PV[i]);
       jet_theta_2D.push_back(tmp_jet_theta_2D[i]);
       genjet_alpha_PV.push_back(0);
@@ -520,12 +622,19 @@ void skimmer::run()
 
 
 float skimmer::calcDeltaT(const float lx, const float bx, const float la, const float ba, const float lo, const float bo){
-  float dl = (float)lx/(float)bx + (float)la/(float)ba - (float)lo/(float)bo; // change in distance
+  //float dl = (float)lx/(float)bx + (float)la/(float)ba - (float)lo/(float)bo; // change in distance
+  float dl = (float)lx + (float)la - (float)lo; // change in distance
   float dt = (float)dl/30.0; // convert to time by dividing by c (30cm/ns) 
+  //if (dt < 0){
+  //  std::cout << "DT = " << dt << " < 0 !!!! " << std::endl; 
+  //  std::cout << lx << "/" << bx << " + " << la << "/" << ba << " - " << lo << "/" << bo << std::endl;
+  //  std::cout << (float)lx/(float)bx << " + " << (float)la/(float)ba << " - " << (float)lo/(float)bo << std::endl;
+  //  std::cout << " real dist: " << lx+la << " " << (float)lx/(float)bx+(float)la/(float)ba << " straight line: " << lo << std::endl;
+  //}
   return dt; 
 }// end calcDeltaT
 
-float skimmer::calcAvgT(const float t, const int n){ 
+float skimmer::calcAvgT(const float t, const float n){ 
   float avgT = -1000;
   if (n!=0) avgT = (float)t/(float)n;
   return avgT;
@@ -533,7 +642,7 @@ float skimmer::calcAvgT(const float t, const int n){
 
 float skimmer::smearVal(const float res){
   TRandom3 * r = new TRandom3(0);
-  float val = r->Gaus(1,res);
+  float val = r->Gaus(0,res);
   delete r;
   return val;
 }// end smearVal

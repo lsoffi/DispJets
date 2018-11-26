@@ -2,6 +2,7 @@
 #define __skimmer__
 
 #include "TString.h"
+#include "TMath.h"
 #include "TTree.h"
 #include "TBranch.h"
 #include "TDirectory.h"
@@ -18,7 +19,7 @@ public:
   ~skimmer();
   void  run();
   float calcDeltaT(const float lx, const float bx, const float la, const float ba, const float lo, const float bo);
-  float calcAvgT(const float t, const int n); 
+  float calcAvgT(const float t, const float n); 
   float smearVal(const float res);
 
 private:
