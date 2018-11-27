@@ -47,6 +47,11 @@ void plotter::histos( TH1map & map , TH2map & map2){
   map["jet_t_smear70"]		= MakeTH1FPlot("jet_t_smear70","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear180"] 	= MakeTH1FPlot("jet_t_smear180","",150,-5,10,"Jet time [ns]","");
   map["jet_t_smear500"] 	= MakeTH1FPlot("jet_t_smear500","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_wgt"]		= MakeTH1FPlot("jet_t_wgt","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_wgt30"]		= MakeTH1FPlot("jet_t_wgt30","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_wgt50"]		= MakeTH1FPlot("jet_t_wgt50","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_wgt70"]		= MakeTH1FPlot("jet_t_wgt70","",150,-5,10,"Jet time [ns]","");
+  map["jet_t_wgt180"]		= MakeTH1FPlot("jet_t_wgt180","",150,-5,10,"Jet time [ns]","");
   map["jet_t_diff0"]		= MakeTH1FPlot("jet_t_diff0","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
   map["jet_t_diff30"]		= MakeTH1FPlot("jet_t_diff30","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
   map["jet_t_diff50"]		= MakeTH1FPlot("jet_t_diff50","",200,-10,10,"T_{smeared} - T_{gen} [ns]","");
@@ -142,11 +147,11 @@ void plotter::go(){
              h1map["unmatch_beta"]->Fill((*genpar_beta)[gp]);
              float unmatch_t = calcDeltaT(0.0,1.0,jet_const_lxyz,jet_const_beta,jet_orig_lxyz,jet_orig_beta); 
              h1map["unmatch_t"]->Fill(unmatch_t);
-             h1map["unmatch_t_smear30"]->Fill(unmatch_t*smearVal(0.03));
-             h1map["unmatch_t_smear50"]->Fill(unmatch_t*smearVal(0.05));
-             h1map["unmatch_t_smear70"]->Fill(unmatch_t*smearVal(0.07));
-             h1map["unmatch_t_smear180"]->Fill(unmatch_t*smearVal(0.18));
-             h1map["unmatch_t_smear500"]->Fill(unmatch_t*smearVal(0.50));
+             h1map["unmatch_t_smear30"]->Fill(unmatch_t+smearVal(0.03));
+             h1map["unmatch_t_smear50"]->Fill(unmatch_t+smearVal(0.05));
+             h1map["unmatch_t_smear70"]->Fill(unmatch_t+smearVal(0.07));
+             h1map["unmatch_t_smear180"]->Fill(unmatch_t+smearVal(0.18));
+             h1map["unmatch_t_smear500"]->Fill(unmatch_t+smearVal(0.50));
          }// end unmatched conditional
 
      }// end loop over genparticles 
@@ -164,10 +169,15 @@ void plotter::go(){
          h1map["jet_t_smear70"]->Fill((*jet_smear_70_t)[i]);   // smeared 70ps histos
          h1map["jet_t_smear180"]->Fill((*jet_smear_180_t)[i]); // smeared 180ps histos
          h1map["jet_t_smear500"]->Fill((*jet_smear_500_t)[i]); // smeared 500ps histos
-         h1map["jet_t_diff0"]->Fill(((*jet_smear_0_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
-         h1map["jet_t_diff30"]->Fill(((*jet_smear_30_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
-         h1map["jet_t_diff50"]->Fill(((*jet_smear_50_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
-         h1map["jet_t_diff70"]->Fill(((*jet_smear_70_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
+         h1map["jet_t_wgt"]->Fill((*jet_wgt_t)[i]);            // pt weighted jet time
+         h1map["jet_t_wgt30"]->Fill((*jet_wgt_t_30)[i]);       // pt weighted jet time smeared 30ps
+         h1map["jet_t_wgt50"]->Fill((*jet_wgt_t_50)[i]);       // pt weighted jet time smeared 50ps
+         h1map["jet_t_wgt70"]->Fill((*jet_wgt_t_70)[i]);       // pt weighted jet time smeared 70ps
+         h1map["jet_t_wgt180"]->Fill((*jet_wgt_t_180)[i]);     // pt weighted jet time smeared 180ps
+         h1map["jet_t_diff0"]->Fill(((*jet_smear_0_t)[i]-(*jet_avg_t)[i]));     // diff smeared and jet time
+         h1map["jet_t_diff30"]->Fill(((*jet_smear_30_t)[i]-(*jet_avg_t)[i]));   // diff smeared and jet time
+         h1map["jet_t_diff50"]->Fill(((*jet_smear_50_t)[i]-(*jet_avg_t)[i]));   // diff smeared and jet time
+         h1map["jet_t_diff70"]->Fill(((*jet_smear_70_t)[i]-(*jet_avg_t)[i]));   // diff smeared and jet time
          h1map["jet_t_diff180"]->Fill(((*jet_smear_180_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
          h1map["jet_t_diff500"]->Fill(((*jet_smear_500_t)[i]-(*jet_avg_t)[i])); // diff smeared and jet time
          if ((*jet_avg_t)[i] > max_jet_t){ h1map["max_jet_t"]->Fill(max_jet_t); max_jet_t = (*jet_avg_t)[i]; } // max avg jet time
@@ -426,6 +436,11 @@ void plotter::setuptreebranches()
    jet_smear_70_t = 0;
    jet_smear_180_t = 0;
    jet_smear_500_t = 0;
+   jet_wgt_t = 0;
+   jet_wgt_t_30 = 0;
+   jet_wgt_t_50 = 0;
+   jet_wgt_t_70 = 0;
+   jet_wgt_t_180 = 0;
    jet_pt = 0;
    jet_alpha_PV = 0;
    jet_theta_2D = 0;
@@ -551,6 +566,11 @@ void plotter::setuptreebranches()
    t->SetBranchAddress("jet_smear_70_t", &jet_smear_70_t, &b_jet_smear_70_t);
    t->SetBranchAddress("jet_smear_180_t", &jet_smear_180_t, &b_jet_smear_180_t);
    t->SetBranchAddress("jet_smear_500_t", &jet_smear_500_t, &b_jet_smear_500_t);
+   t->SetBranchAddress("jet_wgt_t", &jet_wgt_t, &b_jet_wgt_t);
+   t->SetBranchAddress("jet_wgt_t_30", &jet_wgt_t_30, &b_jet_wgt_t_30);
+   t->SetBranchAddress("jet_wgt_t_50", &jet_wgt_t_50, &b_jet_wgt_t_50);
+   t->SetBranchAddress("jet_wgt_t_70", &jet_wgt_t_70, &b_jet_wgt_t_70);
+   t->SetBranchAddress("jet_wgt_t_180", &jet_wgt_t_180, &b_jet_wgt_t_180);
    t->SetBranchAddress("jet_pt", &jet_pt, &b_jet_pt);
    t->SetBranchAddress("jet_alpha_PV", &jet_alpha_PV, &b_jet_alpha_PV);
    t->SetBranchAddress("jet_theta_2D", &jet_theta_2D, &b_jet_theta_2D);

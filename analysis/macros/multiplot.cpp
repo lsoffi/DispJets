@@ -203,7 +203,7 @@ void multiplot::setupcuts()
 void multiplot::setuphistos()
 {
 
-  nh = 3;
+  nh = 4;
   hist.resize(nh);
   // hist[0] are jet t plots
   hist[0].push_back("jet_t");
@@ -225,6 +225,12 @@ void multiplot::setuphistos()
   hist[2].push_back("jet_t_diff70");
   hist[2].push_back("jet_t_diff180");
   hist[2].push_back("jet_t_diff500");
+  // hist[3] are weighted jet t plots
+  hist[3].push_back("jet_t_wgt");
+  hist[3].push_back("jet_t_wgt30");
+  hist[3].push_back("jet_t_wgt50");
+  hist[3].push_back("jet_t_wgt70");
+  hist[3].push_back("jet_t_wgt180");
 
   for (unsigned int i = 0; i < nh; i++){
     nsub.push_back(hist[i].size());
@@ -247,6 +253,11 @@ void multiplot::setuphistos()
   colors["jet_t_diff70"]	= kGreen;
   colors["jet_t_diff180"]	= kRed;
   colors["jet_t_diff500"]	= kOrange;
+  colors["jet_t_wgt"]		= kBlack;
+  colors["jet_t_wgt30"]		= kMagenta;
+  colors["jet_t_wgt50"]		= kTeal;
+  colors["jet_t_wgt70"]		= kGreen;
+  colors["jet_t_wgt180"]	= kRed;
 
 }// end setuphistos
 

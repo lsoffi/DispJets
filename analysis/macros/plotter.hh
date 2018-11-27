@@ -166,6 +166,11 @@ private:
   vector<float>   *jet_smear_70_t;
   vector<float>   *jet_smear_180_t;
   vector<float>   *jet_smear_500_t;
+  vector<float>   *jet_wgt_t;
+  vector<float>   *jet_wgt_t_30;
+  vector<float>   *jet_wgt_t_50;
+  vector<float>   *jet_wgt_t_70;
+  vector<float>   *jet_wgt_t_180;
   vector<float>   *jet_pt;
   vector<float>   *jet_alpha_PV;
   vector<float>   *jet_theta_2D;
@@ -291,6 +296,11 @@ private:
   TBranch        *b_jet_smear_70_t;   //!
   TBranch        *b_jet_smear_180_t;   //!
   TBranch        *b_jet_smear_500_t;   //!
+  TBranch        *b_jet_wgt_t;   //!
+  TBranch        *b_jet_wgt_t_30;   //!
+  TBranch        *b_jet_wgt_t_50;   //!
+  TBranch        *b_jet_wgt_t_70;   //!
+  TBranch        *b_jet_wgt_t_180;   //!
   TBranch        *b_jet_pt;   //!
   TBranch        *b_jet_alpha_PV;   //!
   TBranch        *b_jet_theta_2D;   //!

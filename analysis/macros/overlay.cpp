@@ -138,6 +138,8 @@ void overlay::setupplots()
   hnames.push_back("particle_dxy");
   hnames.push_back("particle_dxyz");
   hnames.push_back("LL_cTau");
+  hnames.push_back("jet_t_wgt");
+  hnames.push_back("jet_t_wgt30");
   nh = hnames.size();
 
 }// end setupplots
