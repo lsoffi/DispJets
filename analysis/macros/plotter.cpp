@@ -24,13 +24,13 @@ plotter::~plotter()
 void plotter::histos( TH1map & map , TH2map & map2){
 
   // 1d histos
-  map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",2000,0,2000,"LL particle c#tau [cm]","");
-  //if (ctau=="0mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
-  //if (ctau=="1mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
-  //if (ctau=="10mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
-  //if (ctau=="100mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,50,"LL particle c#tau [cm]","");
-  //if (ctau=="1000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",500,0,500,"LL particle c#tau [cm]","");
-  //if (ctau=="10000mm") 		map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",5000,0,5000,"LL particle c#tau [cm]","");
+  if (ctau=="0mm") 	map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,0.5,"LL particle c#tau [cm]","");
+  if (ctau=="1mm") 	map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,0.5,"LL particle c#tau [cm]","");
+  if (ctau=="10mm") 	map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5,"LL particle c#tau [cm]","");
+  if (ctau=="100mm") 	map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,50,"LL particle c#tau [cm]","");
+  if (ctau=="1000mm") 	map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,500,"LL particle c#tau [cm]","");
+  if (ctau=="10000mm") 	map["LL_cTau"] = MakeTH1FPlot("LL_cTau","",50,0,5000,"LL particle c#tau [cm]","");
+  map["LL_cTau_all"] 		= MakeTH1FPlot("LL_cTau_all","",2000,0,2000,"LL particle c#tau [cm]","");
   map["LL_beta"]		= MakeTH1FPlot("LL_beta","",100,0,1,"LL particle #beta","");
   map["particle_dxy"]		= MakeTH1FPlot("particle_dxy","",100,0,100,"d_{xy} [cm]","");
   map["particle_dxyz"]		= MakeTH1FPlot("particle_dxyz","",100,0,100,"d_{xyz} [cm]","");
@@ -98,6 +98,7 @@ void plotter::go(){
        if ((*mom_dupl)[gm]==1) continue; // only plot mom once
        h1map["LL_beta"]->Fill((*mom_beta)[gm]);          // mom beta
        h1map["LL_cTau"]->Fill((*mom_ctau)[gm]);          // mom ctau
+       h1map["LL_cTau_all"]->Fill((*mom_ctau)[gm]);          // mom ctau
      }
 
      // draw gen jet information
@@ -194,6 +195,7 @@ void plotter::go(){
 
   // fit ctau plot
   h1map["LL_cTau"]->Fit("expo");
+  h1map["LL_cTau_all"]->Fit("expo");
 
   // fit time diff plots
   h1map["jet_t_diff0"]->Fit("gaus");
@@ -270,7 +272,7 @@ void plotter::save1Dplots(const TH1map & map)
     hist->Draw("HIST");
 
     // specific instructions for certain histos
-    if (name=="LL_cTau"){
+    if (name=="LL_cTau" || name=="LL_cTau_all"){
       TF1* f = (TF1*)hist->GetFunction("expo");
       f->Draw("SAME");
     }

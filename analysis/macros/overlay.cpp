@@ -52,7 +52,7 @@ void overlay::go()
     for (unsigned int j = 0; j < nfiles; j++){
       // pick up histos
       histos[i][j] = (TH1F*)infile[ctau[j]]->Get(Form("%s",hnames[i].Data()));
-      if (histos[i][j]==NULL) std::cout << "NO HISTO" << std::endl;
+      if (histos[i][j]==NULL) std::cout << "NO HISTO: " << hnames[i].Data() << std::endl;
       ohistos[i][j] = (TH1F*)histos[i][j]->Clone();
       // rescale by integral
       tmp_int = histos[i][j]->Integral();
@@ -137,7 +137,7 @@ void overlay::setupplots()
   hnames.push_back("jet_t_smear30");
   hnames.push_back("particle_dxy");
   hnames.push_back("particle_dxyz");
-  hnames.push_back("LL_cTau");
+  hnames.push_back("LL_cTau_all");
   hnames.push_back("jet_t_wgt");
   hnames.push_back("jet_t_wgt30");
   nh = hnames.size();
