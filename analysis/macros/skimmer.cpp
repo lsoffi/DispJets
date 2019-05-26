@@ -358,10 +358,10 @@ void skimmer::run()
       if ((*genpar_pt)[gp] < 1.0)             continue; // keep only pT > 1 GeV tracks
 
       smear_value_0   = smearVal(0.18); // new res: 180 ps     // old res: 0 ps  
-      smear_value_30  = smearVal(TMath::Sqrt(0.18*0.18 + 0.03*0.03)); // new res: 180+30 ps  // old res: 30 ps -> 0.03 ns
-      smear_value_50  = smearVal(TMath::Sqrt(0.18*0.18 + 0.05*0.05)); // new res: 180+50 ps  // old res: 50 ps -> 0.05 ns
-      smear_value_70  = smearVal(TMath::Sqrt(0.18*0.18 + 0.07*0.07)); // new res: 180+70 ps  // old res: 70 ps -> 0.07 ns
-      smear_value_180 = smearVal(TMath::Sqrt(0.18*0.18 + 0.18*0.18)); // new res: 180+180 ps // old res: 180 ps -> 0.18 ns
+      smear_value_30  = smearVal(TMath::Sqrt(0.03*0.03 + 0.03*0.03)); // new res: 180+30 ps  // old res: 30 ps -> 0.03 ns
+      smear_value_50  = smearVal(TMath::Sqrt(0.03*0.03 + 0.05*0.05)); // new res: 180+50 ps  // old res: 50 ps -> 0.05 ns
+      smear_value_70  = smearVal(TMath::Sqrt(0.03*0.03 + 0.07*0.07)); // new res: 180+70 ps  // old res: 70 ps -> 0.07 ns
+      smear_value_180 = smearVal(TMath::Sqrt(0.03*0.03 + 0.18*0.18)); // new res: 180+180 ps // old res: 180 ps -> 0.18 ns
       smear_value_500 = smearVal(0.50); // new res: 500 ps     // old res: 500 ps -> 0.50 ns
  
       // constituent particle info 

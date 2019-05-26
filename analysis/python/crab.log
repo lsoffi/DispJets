@@ -1,0 +1,38 @@
+DEBUG 2019-05-21 08:39:00,157: 	 Executing command: 'submit'
+DEBUG 2019-05-21 08:39:00,158: 	 Found CRAB cache file /afs/cern.ch/user/s/soffi/.crab3
+DEBUG 2019-05-21 08:39:00,167: 	 Checking credentials
+DEBUG 2019-05-21 08:39:00,168: 	 Found proxy file /tmp/x509up_u57603
+DEBUG 2019-05-21 08:39:00,168: 	 Getting proxy life time left
+DEBUG 2019-05-21 08:39:00,873: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u57603 -timeleft
+ output : 86358
+
+ error: 
+ retcode : 0
+DEBUG 2019-05-21 08:39:01,579: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u57603 -actimeleft
+ output : 86357
+
+ error: 
+ retcode : 0
+DEBUG 2019-05-21 08:39:01,579: 	 Proxy lifetime 86358 secs is different from voms extension lifetime 86357 secs for proxy: /tmp/x509up_u57603
+DEBUG 2019-05-21 08:39:01,579: 	 Proxy valid for 23:59:17 hours
+INFO 2019-05-21 08:39:01,579: 	 Will use CRAB configuration file crabConfig_1mm.py
+DEBUG 2019-05-21 08:39:01,579: 	 Loading CRAB configuration file.
+DEBUG 2019-05-21 08:39:01,583: 	 Will use CRAB Analysis plugin (i.e. will run an analysis job type).
+ERROR 2019-05-21 08:39:01,583: 	 Working area '/afs/cern.ch/work/s/soffi/DP-BE-FOR-ERC/CMSSW_9_4_9/src/DispJets/analysis/python/crab_projects/crab_DispJets_m50_ct1mm' already exists 
+Please change the requestName in the config file
+ERROR 2019-05-21 08:39:01,583: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1904/bin/crab", line 161, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1904/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1904/lib/python2.7/site-packages/CRABClient/Commands/submit.py", line 34, in __init__
+    SubCommand.__init__(self, logger, cmdargs, disable_interspersed_args=True)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1904/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 315, in __init__
+    getattr(self.configuration.General, 'requestName', None))
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1904/lib/python2.7/site-packages/CRABClient/ClientUtilities.py", line 404, in createWorkArea
+    raise ConfigException("Working area '%s' already exists \nPlease change the requestName in the config file" % fullpath)
+ConfigException: Working area '/afs/cern.ch/work/s/soffi/DP-BE-FOR-ERC/CMSSW_9_4_9/src/DispJets/analysis/python/crab_projects/crab_DispJets_m50_ct1mm' already exists 
+Please change the requestName in the config file

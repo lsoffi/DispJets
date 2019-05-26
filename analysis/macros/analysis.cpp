@@ -21,19 +21,20 @@ analysis::analysis(TString indir, TString outdir, TString t_cut, TString t_res, 
   // input names
   //s_file.push_back("XXto4Q_M100_CT100mm");
   //s_file.push_back("dispjets");
-  s_file.push_back("xxqqqq_m50_ct0mm");
-  s_file.push_back("xxqqqq_m50_ct1mm");
-  s_file.push_back("xxqqqq_m50_ct10mm");
-  s_file.push_back("xxqqqq_m50_ct100mm");
-  s_file.push_back("xxqqqq_m50_ct1000mm");
-  s_file.push_back("xxqqqq_m50_ct10000mm");
+  //  s_file.push_back("xxqqqq_m50_ct0mm");
+  s_file.push_back("dispjets_ct1mm");
+  s_file.push_back("dispjets_ct10mm");
+  s_file.push_back("dispjets_ct100mm");
+  s_file.push_back("dispjets_ct1000mm");
+  s_file.push_back("dispjets_ct10000mm");
+
   //b_file.push_back("QCD");
   nSig = s_file.size();
   nBkg = b_file.size();
 
   // setup xsec values
   for (int f = 0; f < nSig; f++){
-    xsec[s_file[f]] = 1.0;//0.1994; // signal xsec = 1pb
+    xsec[s_file[f]] = 0.001;//0.1994; // signal xsec = 0.001pb
   }
   xsec["QCD"] = 10000; 
  
@@ -53,10 +54,21 @@ void analysis::run()
 {
 
   // get number of events above cut
+  double eff[5];
+  double ctau[5]={1, 10, 100, 1000, 10000};
   for (int f = 0; f < nSig; f++){
     vals[s_file[f]] = applySel(s_file[f]);
+    eff[f] = vals[s_file[f]] ;
     vals[s_file[f]] = applyNorm(vals[s_file[f]],xsec[s_file[f]]);
   }
+
+  TGraph* g =new TGraph(5, ctau, eff);
+  TCanvas* c = new TCanvas("c","",1);
+  c->cd();
+  g->Draw("APE");
+  c->SaveAs("/afs/cern.ch/user/s/soffi/www/DispJets/Limits/eff_vs_ctau.png");
+  c->SaveAs("/afs/cern.ch/user/s/soffi/www/DispJets/Limits/eff_vs_ctau.pdf");
+  
   float sum_bkg_val = 0; 
   for (int f = 0; f < nBkg; f++){
     vals[b_file[f]] = applySel(b_file[f]);
@@ -64,7 +76,7 @@ void analysis::run()
     sum_bkg_val += vals[b_file[f]];
   }
   vals["bkg"] = sum_bkg_val;
-  vals["bkg"] = 0.001; // set bkg to small number for combine
+  vals["bkg"] = 0.00000001; // set bkg to small number for combine
 
   // write out datacard
   for (int f = 0; f < nSig; f++){
@@ -96,7 +108,7 @@ float analysis::applySel(TString file)
   // apply cut
   TH1F * h = new TH1F("h","",2000,-100,100);
   if (res=="0") t->Draw("jet_avg_t >> h",Form("%s",cut.Data()));
-  else          t->Draw(Form("jet_smear_%s_t >> h",res.Data()),Form("%s",cut.Data()));
+  else          t->Draw(Form("jet_smear_%s_t >> h",res.Data()),Form("%s",cut.Data())); //at least one dispolaced jet among the first four
 
   // save output histo
   fout->cd();
@@ -119,6 +131,7 @@ float analysis::applyNorm(float eff, float xsec)
 {
   float numexp = lumi*eff*xsec;
   return numexp;
+  std::cout<<numexp<<std::endl;
 }// end applyNorm
 
 void analysis::makeCard(TString sig)
@@ -129,20 +142,20 @@ void analysis::makeCard(TString sig)
   std::cout << "Writing card " << cardname << std::endl;
   std::ofstream card;
   card.open(cardname); 
-  
+  std::cout<<vals[sig]<<std::endl;
   if (card.is_open()){
     card << Form("# Datacard for %s with lumi = %0.1f/pb",sig.Data(),lumi) << endl;
     card << "imax 1 " << endl;
     card << "jmax * " << endl;
     card << "kmax * " << endl; 
     card << "------------------------------------" << endl;
-    card << "bin 1" << endl;
+    card << "bin bin1" << endl;
     card << "observation 0" << endl;
     card << "------------------------------------" << endl;
-    card << "bin      	1		1"    << endl;
+    card << "bin      	bin1		bin1"    << endl;
     card << "process 	sig		bkg"  << endl;
     card << "process	0		1"    << endl;
-    card << Form("rate     	%0.3f		%0.3f",vals[sig],vals["bkg"]) << endl;
+    card << Form("rate     	%0.3f		%0.13f",vals[sig],vals["bkg"]) << endl;
     card << "------------------------------------" << endl;
     card << "lumi     lnN 	1.03		1.03" << endl;
     card << "trig_eff lnN 	1.50		1.50" << endl;

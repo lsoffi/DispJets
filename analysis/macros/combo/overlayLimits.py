@@ -13,7 +13,7 @@ def run(opts):
   filepath = {}
   filepath["new"] = "dispjets_jsons/plot_m50_r30_L3000000.root"
   filepath["thr"] = "compare_files/data_lim_m50_theory.txt"
-  filepath["old"] = "compare_files/data_lim_m50_L2600.txt"
+  filepath["old"] = "compare_files/data_lim_m50_L2600_inpb_dividedBy13p19.txt"
 
   # style for plots
   color = {}
@@ -21,9 +21,9 @@ def run(opts):
   color["thr"] = kGreen+1
   color["old"] = kBlue-4
   text = {}
-  text["new"] = "Projected Limits"
-  text["thr"] = "Limits from theorists"
-  text["old"] = "Limits from run2 analysis"
+  text["new"] = "w/ MTD (30ps) (3 ab-1)"
+  text["thr"] = "arXiv:1805.05957v3  (3 ab-1)"
+  text["old"] = "Run2 EXO-16-003 (2.6 fb-1)"
 
   # pickup graphs
   tgraph = {} 
@@ -46,6 +46,7 @@ def run(opts):
   for ch in channels:
     tgraph[ch].SetTitle("")
     tgraph[ch].GetXaxis().SetTitle("LL particle c#tau [mm]")
+    tgraph[ch].GetYaxis().SetTitle("UL 95% CL on BR(H #rightarrow XX)")
     tgraph[ch].SetMaximum(2e3)
     tgraph[ch].SetLineColor(color[ch])
     tgraph[ch].SetLineStyle(1)
@@ -63,8 +64,9 @@ def run(opts):
   # save 
   suffix = ""
   if opts.suffix!="": suffix = "_"+opts.suffix 
-  c.SaveAs(opts.outdir+"limits_compare"+suffix+".pdf") 
   c.SaveAs(opts.outdir+"limits_compare"+suffix+".png") 
+  c.SaveAs(opts.outdir+"limits_compare"+suffix+".pdf") 
+
 
 def rescaleaxis(g,axis,scale):
     """This function rescales the x-axis on a TGraph."""

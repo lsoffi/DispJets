@@ -19,7 +19,7 @@ opts.register('sampleID',
 opts.parseArguments()
 
 # max events to process
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # get input file
 process.source = cms.Source("PoolSource",
@@ -30,7 +30,11 @@ process.source = cms.Source("PoolSource",
 	# xrootd files FNAL:            'root://cmsxrootd.fnal.gov//PATH/file.root'
         # xrootd files GLOBAL REDIRECT: 'root://cms-xrd-global.cern.ch//PATH/file.root'
 	#'root://cms-xrd-global.cern.ch//store/mc/RunIISummer15GS/QCD_Pt-15TTo7000_TuneZ2star-Flat_13TeV_pythia6/GEN-SIM/MCRUN2_71_V1-v1/40000/448C5AAE-F16B-E511-AA32-3417EBE51CDF.root'
-	'root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau100mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-10p0_384049_10444854_GENSIM.root'
+#        'file:/eos/cms/store/group/phys_egamma/soffi/XXQQQQ-GEN-SIM/XXQQQQ_m50_ctau100mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-10p0_407067_14871168_GENSIM.root'
+#        'file:/afs/cern.ch/work/s/soffi/DP-BE-FOR-ERC/CMSSW_9_4_9/src/SMP-PhaseIISummer17wmLHEGENOnly-00049_inLHE.root'
+        'file:../../../test.root'
+#        'file:../../../SMP-PhaseIISummer17wmLHEGENOnly-00049.root'
+#	'root://cmsxrootd.fnal.gov//store/user/mzientek/DisplacedJetSamples_GENSIM/XXQQQQ_m50_ctau100mm/ggF-H-S1S2-Sdecay-qqnunu_UFO_ctau-10p0_384049_10444854_GENSIM.root'
 	#'root://cms-xrd-global.cern.ch//store/mc/RunIISummer15GS/XXTo4J_M-50_CTau-1000mm_TuneCUETP8M1_13TeV_pythia8/GEN-SIM/MCRUN2_71_V1-v1/10000/F80A1959-95C2-E511-8FA6-001EC9ADE758.root'
 	#'/store/mc/RunIISummer15GS/XXTo4J_M-50_CTau-1000mm_TuneCUETP8M1_13TeV_pythia8/GEN-SIM/MCRUN2_71_V1-v1/10000/F80A1959-95C2-E511-8FA6-001EC9ADE758.root'
         #'root://cms-xrd-global.cern.ch//store/mc/RunIISummer15GS/XXTo4J_M-100_CTau-100mm_TuneCUETP8M1_13TeV_pythia8/GEN-SIM/MCRUN2_71_V1-v1/70000/14117C30-7FC2-E511-A4D6-00266CF2679C.root',
@@ -53,7 +57,7 @@ process.dispjets = cms.EDAnalyzer('DisplacedJetsAnalyzer',
 				sampleID	= cms.untracked.int32(opts.sampleID),
 				generatorInfo	= cms.InputTag("generator"),
 				genjets		= cms.untracked.InputTag("ak4GenJets", "", "SIM"),
-                                genparticles    = cms.untracked.InputTag("genParticles", "", "SIM"),
+                                genparticles    = cms.untracked.InputTag("genParticles", "", "SIM"), #era SIM
 				pileupInfo	= cms.untracked.InputTag("slimmedAddPileupInfo"),
 				vertices	= cms.untracked.InputTag("g4SimHits", "", "SIM"),
 				tracks		= cms.untracked.InputTag("g4SimHits", "", "SIM"),

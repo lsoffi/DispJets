@@ -16,7 +16,7 @@ void Overlay(const TString & path)
   ctau.push_back("10000mm");
 
   std::map<TString,Color_t> colors;
-  colors["0mm"] 	= kBlack;
+  //  colors["0mm"] 	= kBlack;
   colors["1mm"] 	= kMagenta;
   colors["10mm"]	= kCyan+1;
   colors["100mm"]	= kGreen-6;

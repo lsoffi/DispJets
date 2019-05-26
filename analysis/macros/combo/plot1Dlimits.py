@@ -12,9 +12,11 @@ plot.ModTDRStyle()
 def run(model,m1,res,lumi):
 
   filepath = 'dispjets_jsons/'
+  rootfile = ROOT.TFile(filepath+"plot_m"+m1+"_r"+str(res)+"_L"+str(lumi)+".root","RECREATE")
+  rootfile.cd()
   #m2  = [1, 3, 10, 30, 100, 300, 1000, 3000]
-  m2 = [100]
-  wgt = 1 
+  m2 = [1,10,100,1000,10000]
+  wgt = 0.001/13.19  #0.001 b/c i injected this xsec in analysis.cpp 13.19 divided b/c theo presents limits in terms of BR
 
   # read in theoretical xsec
   if (model=="2HDM"): xsecfile = open('crosssectionZp2HDM.txt','r')
@@ -47,14 +49,14 @@ def run(model,m1,res,lumi):
   for m in m2:
     newmassstr = str(m)+'_'+m1
     if newmassstr not in mstr: continue
-
+    
     # make correct array of xsecs
     mass.append(m)
     xsec.append(xsecs[str(m)+'_'+m1])   
     if (model=="2HDM"): filename=filepath+'Zprime'+str(m)+'A'+m1+'.json'
     if (model=="BARY"): filename=filepath+'Zprime'+str(m)+'DM'+m1+'.json'
-    if (model=="DISP"): filename=filepath+'XXto4Q_M'+m1+'_CT'+str(m)+'_r'+res+'_L'+lumi+'.json'
-
+    if (model=="DISP"): filename=filepath+'datacard_dispjets_ct'+str(m)+'mm_res'+res+'_lumi'+lumi+'pb.json'
+    print filename
     if os.path.isfile(filename):
       with open(filename) as jsonfile:
         data = json.load(jsonfile)
@@ -65,6 +67,7 @@ def run(model,m1,res,lumi):
           do1_raw.append(data[key][u'exp-1'])
           up2_raw.append(data[key][u'exp+2'])
           do2_raw.append(data[key][u'exp-2'])
+          print data[key][u'exp0']
     else:  print 'File '+filename+' NOT found'
 
   exp = scaleBR(exp_raw,wgt) 
@@ -75,16 +78,20 @@ def run(model,m1,res,lumi):
   do2 = scaleBR(do2_raw,wgt)
 
   numpts = len(mass)          
+  print numpts
+  print xsec
   limitPlotExp = ROOT.TGraph(numpts,mass,exp)
   limitPlotObs = ROOT.TGraph(numpts,mass,obs)
   limitPlotXsc = ROOT.TGraph(numpts,mass,xsec)
   limitPlot1sig   = ROOT.TGraph(2*numpts)
   limitPlot2sig   = ROOT.TGraph(2*numpts)
+
   for i in range(0,numpts):
     limitPlot1sig.SetPoint(i,mass[i],up1[i])
     limitPlot1sig.SetPoint(numpts+i,mass[numpts-i-1],do1[numpts-i-1])
     limitPlot2sig.SetPoint(i,mass[i],up2[i])
     limitPlot2sig.SetPoint(numpts+i,mass[numpts-i-1],do2[numpts-i-1])
+  
 
   ROOT.gStyle.SetOptStat(0)
   c = ROOT.TCanvas('','')
@@ -94,7 +101,7 @@ def run(model,m1,res,lumi):
  
   limitPlotObs.SetTitle("")
   limitPlotObs.GetXaxis().SetTitle("LL particle c#tau [mm]")
-  limitPlotObs.GetYaxis().SetTitle("#sigma [pb]")
+  limitPlotObs.GetYaxis().SetTitle("BR(H#rightarrowXX)")
 
   # styling
   limitPlotXsc.SetLineColor(4)
@@ -112,7 +119,7 @@ def run(model,m1,res,lumi):
   limitPlot2sig.SetFillStyle(3013)
 
   limitPlotObs.SetMaximum(10)
-  limitPlotObs.SetMinimum(0.1)
+  limitPlotObs.SetMinimum(0.0000001)
 
   limitPlotObs.Draw("ACP")
   limitPlot2sig.Draw("F SAME")
@@ -120,15 +127,22 @@ def run(model,m1,res,lumi):
   limitPlotExp.Draw("CP SAME")
   limitPlotObs.Draw("CP SAME")
   limitPlotXsc.Draw("CP SAME")
-
+  limitPlotExp.SetName("expected_curve")
+  limitPlotExp.Write()
+  
   CMS_lumi(c,4,0)
   c.RedrawAxis() 
-  c.Print("~/www/Plots/DispJets/GenLevelPlots/Limits/lim1D_m"+m1+"_r"+res+"_L"+lumi+".pdf")
-  c.Print("~/www/Plots/DispJets/GenLevelPlots/Limits/lim1D_m"+m1+"_r"+res+"_L"+lumi+".png")
+  c.Print("~/www/DispJets/Limits/lim1D_m"+m1+"_r"+res+"_L"+lumi+".pdf")
+  c.Print("~/www/DispJets/Limits/lim1D_m"+m1+"_r"+res+"_L"+lumi+".png")
  
 def scaleBR(val,wgt):
-   scaledval = val
-   return val
+   tmp = array('d')
+   for i in val:
+     scaledval= i * wgt
+     print scaledval
+     tmp.append(i * wgt)
+   print tmp
+   return tmp
   
 if __name__=="__main__":
   model = sys.argv[1]

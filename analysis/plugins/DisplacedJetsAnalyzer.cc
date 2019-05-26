@@ -387,6 +387,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
   std::vector<float>	deltav3;
   std::vector<float>	deltav4;
 
+  
   if (genjets.isValid()){ // make sure have genjet collection
     ngenjets = genjets->size();
  
@@ -410,7 +411,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
 
       int match_LL = 0;   // does a constituent come from the hard interaction 
       float const_dv = 0; // dxyz distance between constituent and mother
-
+  
       // manually get jet constituents 
       if (genparticles.isValid()){ // make sure have genparticles collection
         for (const auto & genpar_iter : *genparticles){ // loop over genparticles
@@ -445,7 +446,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
           float const_dy = const_vy - const_my;
           float const_dz = const_vz - const_mz;
           const_dv = std::sqrt(const_dx*const_dx + const_dy*const_dy + const_dz*const_dz);
-
+	  	  
           // save genparticle constituents associated with each jet
           if (jetiter==0){
             genjet0_nconst++;
@@ -497,13 +498,15 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
           }
 
         }// end loop over genparticles
-      }// end if genparticles.isValid
+  
+    }// end if genparticles.isValid
 
       genjet_match.push_back(match_LL);
       jetiter++; // count genjet
     }// end loop over genjets 
   }// end if genjets.isValid
-  else std::cout << "WARNING: genjets collection is NOT valid" << std::endl;
+
+  //  else std::cout << "WARNING: genjets collection is NOT valid" << std::endl;
 
   if (genparticles.isValid()){ // make sure have genparticles collection
 
@@ -555,18 +558,18 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
          continue;
       }
 
-      //if (genpar_iter.mother(0) != NULL){
-      //  std::cout << "Genpar: " << genpar_iter.pdgId() << " " << genpar_iter.status() << " " << genpar_iter.mother(0)->pdgId() << " " << genpar_iter.mother(0)->status() << std::endl;
-      //  std::cout << "------- v2: " << genpar_iter.vertex().x() << " " << genpar_iter.vertex().y() << " " << genpar_iter.vertex().z() << std::endl;
-      //  std::cout << "------- m1: " << genpar_iter.mother(0)->vx() << " " << genpar_iter.mother(0)->vy() << " " << genpar_iter.mother(0)->vz() << std::endl;
-      //}
+      if (genpar_iter.mother(0) != NULL){
+        std::cout << "Genpar: " << genpar_iter.pdgId() << " " << genpar_iter.status() << " " << genpar_iter.mother(0)->pdgId() << " " << genpar_iter.mother(0)->status() << std::endl;
+        std::cout << "------- v2: " << genpar_iter.vertex().x() << " " << genpar_iter.vertex().y() << " " << genpar_iter.vertex().z() << std::endl;
+        std::cout << "------- m1: " << genpar_iter.mother(0)->vx() << " " << genpar_iter.mother(0)->vy() << " " << genpar_iter.mother(0)->vz() << std::endl;
+      }
  
       // save interesting quarks
       interestingjet++;
       quarknum.push_back(interestingjet);
 
-      //std::cout << "    ----- particle " << genpar_iter.pdgId() << std::endl;
-      //std::cout << "    ----- momref   " << genpar_iter.mother(0)->pdgId() << std::endl;
+      std::cout << "    ----- particle " << genpar_iter.pdgId() << std::endl;
+      std::cout << "    ----- momref   " << genpar_iter.mother(0)->pdgId() << std::endl;
 
       float vx = genpar_iter.vertex().x();
       float vy = genpar_iter.vertex().y();
@@ -619,6 +622,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         mx = mom->vx();
         my = mom->vy();
         mz = mom->vz();
+	//	std::cout<<"vx :"<<vx<<" mx "<<mx<<" vy :"<<vy<<" my "<<my<<" vz :"<<vz<<" mz "<<mz<<std::endl;
         dx = vx - mx;
         dy = vy - my;
         dz = vz - mz;
@@ -626,6 +630,7 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         mGama = mom->energy()/mom->mass(); // mom gamma
         mLxy  = std::sqrt(dx*dx + dy*dy); 
         mLxyz = std::sqrt(dx*dx + dy*dy + dz*dz); 
+	//	std::cout<<mLxyz<<std::endl;
         mcTau = std::sqrt(dx*dx + dy*dy + dz*dz) / (mBeta * mGama); 
 
         tmp_mom_id  	= mom->pdgId();
@@ -664,10 +669,10 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
         if (interestingjet==4){ q4_mx = mx; q4_my = my; q4_mz = mz;}
       }
 
-      //std::cout << " q1: " << q1_mx << " " << q1_mx << " " << q1_mx << std::endl;
-      //std::cout << " q2: " << q2_mx << " " << q2_mx << " " << q2_mx << std::endl;
-      //std::cout << " q3: " << q3_mx << " " << q3_mx << " " << q3_mx << std::endl;
-      //std::cout << " q4: " << q4_mx << " " << q4_mx << " " << q4_mx << std::endl;
+      std::cout << " q1: " << q1_mx << " " << q1_mx << " " << q1_mx << std::endl;
+      std::cout << " q2: " << q2_mx << " " << q2_mx << " " << q2_mx << std::endl;
+      std::cout << " q3: " << q3_mx << " " << q3_mx << " " << q3_mx << std::endl;
+      std::cout << " q4: " << q4_mx << " " << q4_mx << " " << q4_mx << std::endl;
 
       // store only one mom info per gen particle 
       mom_id.push_back(tmp_mom_id);
@@ -743,10 +748,10 @@ void DisplacedJetsAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSe
       dv3 = std::sqrt( (q3_vx-vx)*(q3_vx-vx) + (q3_vy-vy)*(q3_vy-vy) + (q3_vz-vz)*(q3_vz-vz) );    
       dv4 = std::sqrt( (q4_vx-vx)*(q4_vx-vx) + (q4_vy-vy)*(q4_vy-vy) + (q4_vz-vz)*(q4_vz-vz) );    
  
-      if (q1_eta < 1.5 && dR1 < 0.4 && dv1 < 10) match1 = 1;
-      if (q2_eta < 1.5 && dR2 < 0.4 && dv2 < 10) match2 = 1;
-      if (q3_eta < 1.5 && dR3 < 0.4 && dv3 < 10) match3 = 1;
-      if (q4_eta < 1.5 && dR4 < 0.4 && dv4 < 10) match4 = 1;
+      if (q1_eta < 1.5 && dR1 < 0.3 && dv1 < 10) match1 = 1;
+      if (q2_eta < 1.5 && dR2 < 0.3 && dv2 < 10) match2 = 1;
+      if (q3_eta < 1.5 && dR3 < 0.3 && dv3 < 10) match3 = 1;
+      if (q4_eta < 1.5 && dR4 < 0.3 && dv4 < 10) match4 = 1;
       if (genpar_iter.eta() < 1.5 && dR1 > 0.8 && dR2 > 0.8 && dR3 > 0.8 && dR4 > 0.8) match0 = 1;
 
       // loose matching (no requirement on matching the SV) -- for use in calculating alpha_jet_PV

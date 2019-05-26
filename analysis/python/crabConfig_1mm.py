@@ -5,6 +5,7 @@ config = config()
 config.General.requestName = 'DispJets_m50_ct1mm'
 config.General.workArea    = 'crab_projects'
 
+config.JobType.allowUndistributedCMSSW = True
 ## Input analyzer pset ## 
 config.JobType.pluginName  = 'analysis'
 config.JobType.psetName    = 'crabConfigTemplate.py'
@@ -24,4 +25,4 @@ config.Site.whitelist     = ['T1_US_FNAL']
 config.Data.outputPrimaryDataset = 'XXQQQQ_m50'
 config.Data.publication   = False
 config.Site.storageSite   = 'T2_CH_CERN'
-config.Data.outLFNDirBase = '/store/user/mzientek/DispJets/'
+config.Data.outLFNDirBase = '/store/group/phys_egamma/soffi/XXQQQQ-GEN-SIM/DisplJetAnalyzer'

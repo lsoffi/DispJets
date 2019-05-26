@@ -45,6 +45,7 @@ process.dispjets = cms.EDAnalyzer('DisplacedJetsAnalyzer',
                                 genparticles    = cms.untracked.InputTag("genParticles", "", "SIM"),
 				pileupInfo	= cms.untracked.InputTag("slimmedAddPileupInfo"),
 				vertices	= cms.untracked.InputTag("g4SimHits", "", "SIM"),
+                                tracks          = cms.untracked.InputTag("g4SimHits", "", "SIM"),
 )
 
 if opts.debug: process.p = cms.Path( process.content*process.dispjets )

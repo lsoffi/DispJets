@@ -1,6 +1,6 @@
 #! /bin/sh
 
-path="~/www/Plots/DispJets/GenStudies/"
+path="~/www/DispJets/GenStudies/"
 
 echo "Running samples"
 root -l -b -q "Overlay.C("\"${path}\"")"
